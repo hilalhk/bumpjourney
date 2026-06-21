@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -16,6 +16,9 @@ export default function Settings() {
   const info = usePregnancy();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [savingName, setSavingName] = useState(false);
   const [dueDate, setDueDate] = useState<string | null>(null);
   const [babySex, setBabySex] = useState<string | null>(null);
 
@@ -41,6 +44,21 @@ export default function Settings() {
   }, []);
 
   useFocusEffect(useCallback(() => { loadDue(); }, [loadDue]));
+
+  function startEditName() {
+    setNameDraft(name);
+    setEditingName(true);
+  }
+
+  async function saveName() {
+    const trimmed = nameDraft.trim();
+    setSavingName(true);
+    const { data, error } = await supabase.auth.updateUser({ data: { full_name: trimmed } });
+    setSavingName(false);
+    if (error) { Alert.alert("Couldn't save", error.message); return; }
+    setName(fullName(data.user));
+    setEditingName(false);
+  }
 
   function confirmSignOut() {
     Alert.alert('Sign out', 'Are you sure you want to sign out?', [
@@ -118,7 +136,42 @@ export default function Settings() {
 
         <Text style={styles.sectionLabel}>Account</Text>
         <View style={styles.card}>
-          <View style={styles.row}>
+          {editingName ? (
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Name</Text>
+              <View style={styles.nameEditRow}>
+                <TextInput
+                  style={styles.nameInput}
+                  value={nameDraft}
+                  onChangeText={setNameDraft}
+                  placeholder="Your name"
+                  placeholderTextColor={colors.faint}
+                  autoFocus
+                  autoCapitalize="words"
+                  returnKeyType="done"
+                  onSubmitEditing={saveName}
+                  editable={!savingName}
+                />
+                {!savingName && (
+                  <TouchableOpacity onPress={() => setEditingName(false)} hitSlop={6}>
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity onPress={saveName} disabled={savingName} hitSlop={6}>
+                  <Text style={styles.saveText}>{savingName ? 'Saving…' : 'Save'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.linkRow} onPress={startEditName} activeOpacity={0.7}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowLabel}>Name</Text>
+                <Text style={styles.rowValue}>{name || 'Not set'}</Text>
+              </View>
+              <EditPill />
+            </TouchableOpacity>
+          )}
+          <View style={[styles.row, styles.rowBorder]}>
             <Text style={styles.rowLabel}>Email</Text>
             <Text style={styles.rowValue}>{email}</Text>
           </View>
@@ -166,6 +219,10 @@ const styles = StyleSheet.create({
   rowLabel: { fontFamily: fonts.body6, fontSize: 14, color: colors.ink },
   rowValue: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginTop: 3 },
   linkRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
+  nameEditRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 5 },
+  nameInput: { flex: 1, fontFamily: fonts.body5, fontSize: 14, color: colors.ink, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 10, backgroundColor: colors.chipBg },
+  saveText: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
+  cancelText: { fontFamily: fonts.body6, fontSize: 13, color: colors.muted },
   editPill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: colors.accentSoft, borderRadius: 100, paddingVertical: 6, paddingHorizontal: 11 },
   editText: { fontFamily: fonts.body6, fontSize: 12, color: colors.accentDeep },
   disclaimer: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, marginTop: 16 },
