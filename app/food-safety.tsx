@@ -99,11 +99,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14,
   },
   search: { flex: 1, fontFamily: fonts.body5, fontSize: 14, color: colors.ink },
-  catScroll: { marginTop: 12, flexGrow: 0 },
+  catScroll: { marginTop: 12, flexGrow: 0, height: 44 },
   catRow: { paddingHorizontal: 18, gap: 8, alignItems: 'center' },
   cat: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 100, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
   catOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  catText: { fontFamily: fonts.body6, fontSize: 12, color: '#6E5560' },
+  catText: { fontFamily: fonts.body6, fontSize: 12, lineHeight: 16, color: '#6E5560' },
   catTextOn: { color: colors.white },
 
   card: { ...cardStyle, padding: 14, marginBottom: 10 },
