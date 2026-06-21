@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../../components/Card';
 import { Icon } from '../../components/Icons';
 import ScreenGlow from '../../components/ScreenGlow';
@@ -55,49 +55,58 @@ export default function Journal() {
 
   const prompts = getPrompts(week);
 
+  const header = (
+    <>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Journal</Text>
+        <TouchableOpacity style={styles.photosBtn} onPress={() => router.push('/photos')} activeOpacity={0.85}>
+          <Icon name="images" size={15} color={colors.accent} />
+          <Text style={styles.photosBtnText}>Photos</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.sectionLabel}>Prompts for week {week}</Text>
+      {prompts.map((p) => (
+        <TouchableOpacity
+          key={p}
+          style={styles.promptCard}
+          activeOpacity={0.85}
+          onPress={() => router.push({ pathname: '/journal-entry', params: { prompt: p, week: String(week) } })}
+        >
+          <Icon name="star" size={17} color={colors.accent} />
+          <Text style={styles.promptText}>{p}</Text>
+          <Icon name="chevron-right" size={16} color={colors.accent} strokeWidth={2.2} />
+        </TouchableOpacity>
+      ))}
+
+      <TouchableOpacity
+        style={styles.blankBtn}
+        activeOpacity={0.85}
+        onPress={() => router.push({ pathname: '/journal-entry', params: { week: String(week) } })}
+      >
+        <Icon name="plus" size={18} color={colors.accentDeep} strokeWidth={2.4} />
+        <Text style={styles.blankText}>Write your own</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.sectionLabel}>Your entries</Text>
+      {loading && <Text style={styles.empty}>Loading…</Text>}
+      {!loading && entries.length === 0 && (
+        <Text style={styles.empty}>No entries yet — tap a prompt above to start.</Text>
+      )}
+    </>
+  );
+
   return (
     <View style={styles.root}>
       <ScreenGlow />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>Journal</Text>
-          <TouchableOpacity style={styles.photosBtn} onPress={() => router.push('/photos')} activeOpacity={0.85}>
-            <Icon name="images" size={15} color={colors.accent} />
-            <Text style={styles.photosBtnText}>Photos</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.sectionLabel}>Prompts for week {week}</Text>
-        {prompts.map((p) => (
+      <FlatList
+        data={entries}
+        keyExtractor={(e) => e.id}
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={header}
+        renderItem={({ item: e }) => (
           <TouchableOpacity
-            key={p}
-            style={styles.promptCard}
-            activeOpacity={0.85}
-            onPress={() => router.push({ pathname: '/journal-entry', params: { prompt: p, week: String(week) } })}
-          >
-            <Icon name="star" size={17} color={colors.accent} />
-            <Text style={styles.promptText}>{p}</Text>
-            <Icon name="chevron-right" size={16} color={colors.accent} strokeWidth={2.2} />
-          </TouchableOpacity>
-        ))}
-
-        <TouchableOpacity
-          style={styles.blankBtn}
-          activeOpacity={0.85}
-          onPress={() => router.push({ pathname: '/journal-entry', params: { week: String(week) } })}
-        >
-          <Icon name="plus" size={18} color={colors.accentDeep} strokeWidth={2.4} />
-          <Text style={styles.blankText}>Write your own</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.sectionLabel}>Your entries</Text>
-        {loading && <Text style={styles.empty}>Loading…</Text>}
-        {!loading && entries.length === 0 && (
-          <Text style={styles.empty}>No entries yet — tap a prompt above to start.</Text>
-        )}
-        {entries.map((e) => (
-          <TouchableOpacity
-            key={e.id}
             style={styles.entryCard}
             activeOpacity={0.85}
             onPress={() => router.push({ pathname: '/journal-entry', params: { id: e.id } })}
@@ -124,8 +133,8 @@ export default function Journal() {
               </View>
             )}
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        )}
+      />
     </View>
   );
 }

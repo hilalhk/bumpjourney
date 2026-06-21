@@ -1,10 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import DateTimeModal from '../components/DateTimeModal';
-import GradientButton from '../components/GradientButton';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { dayKeyOf, formatSeconds, labelOf } from '../lib/dates';
@@ -52,6 +51,9 @@ export default function KickCounter() {
 
   useEffect(() => { loadHistory(); }, [loadHistory]);
 
+  // Clear the running interval if the user leaves mid-session.
+  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+
   function start() {
     setStartedAt(new Date());
     setKicks(0);
@@ -96,97 +98,116 @@ export default function KickCounter() {
       <ScreenGlow />
       <TopBar title="Kick Counter" rightGlyph="help" onRightPress={() => setHelpOpen((h) => !h)} />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        {helpOpen && (
-          <View style={styles.help}>
-            <View style={{ marginTop: 1 }}><Icon name="info" size={16} color={colors.accentDeep} /></View>
-            <Text style={styles.helpText}>{HELP_TEXT}</Text>
-          </View>
-        )}
+      <FlatList
+        data={shown}
+        keyExtractor={(day) => day.key}
+        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            {helpOpen && (
+              <View style={styles.help}>
+                <View style={{ marginTop: 1 }}><Icon name="info" size={16} color={colors.accentDeep} /></View>
+                <Text style={styles.helpText}>{HELP_TEXT}</Text>
+              </View>
+            )}
 
-        {!startedAt ? (
-          <View style={styles.idleCard}>
-            <View style={styles.idleIcon}><Icon name="footprint" size={34} color={colors.accent} strokeWidth={1.5} /></View>
-            <Text style={styles.idleTitle}>Ready to count?</Text>
-            <Text style={styles.idleSub}>Tap start, then tap the circle each time you feel baby move. We{"'"}ll log it after 10.</Text>
-            <GradientButton label="Start session" onPress={start} style={{ marginTop: 20, alignSelf: 'stretch' }} />
-          </View>
-        ) : (
-          <View style={styles.activeCard}>
-            <Text style={styles.elapsedLabel}>Elapsed</Text>
-            <Text style={styles.elapsedTime}>{formatSeconds(elapsed)}</Text>
-            <TouchableOpacity activeOpacity={0.9} onPress={recordKick} style={styles.tapShadow}>
-              <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tapCircle}>
-                <View style={styles.tapInner} />
-                <Text style={styles.tapNum}>{kicks}</Text>
-                <Text style={styles.tapLabel}>TAP FOR EACH KICK</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-            <View style={styles.dots}>
-              {Array.from({ length: 10 }).map((_, i) => (
-                <View key={i} style={[styles.dot, i < kicks && styles.dotOn]} />
-              ))}
-            </View>
-            <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.resetBtn} onPress={reset} activeOpacity={0.85}>
-                <Text style={styles.resetText}>Reset</Text>
-              </TouchableOpacity>
-              <GradientButton label="Finish" onPress={() => finish()} size="md" style={{ flex: 1 }} />
-            </View>
-          </View>
-        )}
-
-        <View style={styles.historyHeader}>
-          <Text style={styles.historyTitle}>Kick history</Text>
-          <TouchableOpacity style={styles.filtersBtn} onPress={() => setFiltersOpen(!filtersOpen)}>
-            <Text style={styles.filtersText}>Filters</Text>
-            <Icon name="funnel" size={15} color={colors.accentDeep} />
-            {(sort !== 'recent' || filterDate) && <View style={styles.filterBadge} />}
-          </TouchableOpacity>
-        </View>
-
-        {filtersOpen && (
-          <View style={styles.filterPanel}>
-            <Text style={styles.filterLabel}>Sort by</Text>
-            <View style={styles.controls}>
-              {(['recent', 'most', 'least'] as SortMode[]).map((m) => (
-                <TouchableOpacity key={m} style={[styles.chip, sort === m && styles.chipOn]} onPress={() => setSort(m)}>
-                  <Text style={[styles.chipText, sort === m && styles.chipTextOn]}>
-                    {m === 'recent' ? 'Newest' : m === 'most' ? 'Most kicks' : 'Least kicks'}
-                  </Text>
+            {!startedAt ? (
+              <View style={styles.idleCard}>
+                <View style={styles.idleIcon}><Icon name="footprint" size={34} color={colors.accent} strokeWidth={1.5} /></View>
+                <Text style={styles.idleTitle}>Ready to count?</Text>
+                <Text style={styles.idleSub}>Tap start, then tap the circle each time you feel baby move. We{"'"}ll log it after 10.</Text>
+                <TouchableOpacity onPress={start} activeOpacity={0.9} style={styles.startBtn}>
+                  <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startGrad}>
+                    <Text style={styles.startText}>Start session</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
-              ))}
-            </View>
-            <Text style={styles.filterLabel}>Date</Text>
-            <View style={styles.controls}>
-              <TouchableOpacity style={[styles.chip, filterDate ? styles.chipOn : null]} onPress={() => setShowPicker(true)}>
-                <Icon name="calendar" size={13} color={filterDate ? colors.white : colors.muted} />
-                <Text style={[styles.chipText, filterDate ? styles.chipTextOn : null]}>{filterDate ? labelOf(filterDate) : 'Pick date'}</Text>
-              </TouchableOpacity>
-              {filterDate && (
-                <TouchableOpacity style={styles.chip} onPress={() => setFilterDate(null)}>
-                  <Icon name="close" size={13} color={colors.muted} />
-                  <Text style={styles.chipText}>Clear</Text>
+              </View>
+            ) : (
+              <View style={styles.activeCard}>
+                <Text style={styles.elapsedLabel}>Elapsed</Text>
+                <Text style={styles.elapsedTime}>{formatSeconds(elapsed)}</Text>
+                <TouchableOpacity activeOpacity={0.9} onPress={recordKick} style={styles.tapShadow}>
+                  <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tapCircle}>
+                    <View style={styles.tapInner} />
+                    <Text style={styles.tapNum}>{kicks}</Text>
+                    <Text style={styles.tapLabel}>TAP FOR EACH KICK</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
-              )}
+                <View style={styles.dots}>
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <View key={i} style={[styles.dot, i < kicks && styles.dotOn]} />
+                  ))}
+                </View>
+                <View style={styles.actionRow}>
+                  <TouchableOpacity style={styles.resetBtn} onPress={reset} activeOpacity={0.85}>
+                    <Text style={styles.resetText}>Reset</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.finishBtn} onPress={() => finish()} activeOpacity={0.9}>
+                    <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.finishGrad}>
+                      <Text style={styles.finishText}>Finish</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            <View style={styles.historyHeader}>
+              <Text style={styles.historyTitle}>Kick history</Text>
+              <TouchableOpacity style={styles.filtersBtn} onPress={() => setFiltersOpen(!filtersOpen)}>
+                <Text style={styles.filtersText}>Filters</Text>
+                <Icon name="funnel" size={15} color={colors.accentDeep} />
+                {(sort !== 'recent' || filterDate) && <View style={styles.filterBadge} />}
+              </TouchableOpacity>
             </View>
-          </View>
-        )}
 
-        <DateTimeModal
-          visible={showPicker}
-          value={filterDate ? new Date(filterDate + 'T00:00:00') : new Date()}
-          mode="date"
-          onConfirm={(selected) => { setShowPicker(false); setFilterDate(dayKeyOf(selected.toISOString())); }}
-          onCancel={() => setShowPicker(false)}
-        />
+            {filtersOpen && (
+              <View style={styles.filterPanel}>
+                <Text style={styles.filterLabel}>Sort by</Text>
+                <View style={styles.controls}>
+                  {(['recent', 'most', 'least'] as SortMode[]).map((m) => (
+                    <TouchableOpacity key={m} style={[styles.chip, sort === m && styles.chipOn]} onPress={() => setSort(m)}>
+                      <Text style={[styles.chipText, sort === m && styles.chipTextOn]}>
+                        {m === 'recent' ? 'Newest' : m === 'most' ? 'Most kicks' : 'Least kicks'}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={[styles.filterLabel, { marginTop: 16 }]}>Date</Text>
+                <View style={styles.controls}>
+                  <TouchableOpacity style={[styles.chip, filterDate ? styles.chipOn : null]} onPress={() => setShowPicker(true)}>
+                    <Icon name="calendar" size={13} color={filterDate ? colors.white : colors.muted} />
+                    <Text style={[styles.chipText, filterDate ? styles.chipTextOn : null]}>{filterDate ? labelOf(filterDate) : 'Pick date'}</Text>
+                  </TouchableOpacity>
+                  {filterDate && (
+                    <TouchableOpacity style={styles.chip} onPress={() => setFilterDate(null)}>
+                      <Icon name="close" size={13} color={colors.muted} />
+                      <Text style={styles.chipText}>Clear</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
 
-        {historyLoading && <Text style={styles.empty}>Loading…</Text>}
-        {!historyLoading && shown.length === 0 && (
-          <Text style={styles.empty}>{filterDate ? 'No sessions on this date.' : 'No sessions yet — your history will appear here.'}</Text>
-        )}
-        {shown.map((day) => (
-          <View key={day.key} style={styles.dayCard}>
+            <DateTimeModal
+              visible={showPicker}
+              value={filterDate ? new Date(filterDate + 'T00:00:00') : new Date()}
+              mode="date"
+              onConfirm={(selected) => { setShowPicker(false); setFilterDate(dayKeyOf(selected.toISOString())); }}
+              onCancel={() => setShowPicker(false)}
+            />
+
+            {historyLoading && <Text style={styles.empty}>Loading…</Text>}
+            {!historyLoading && shown.length === 0 && (
+              <Text style={styles.empty}>{filterDate ? 'No sessions on this date.' : 'No sessions yet — your history will appear here.'}</Text>
+            )}
+          </>
+        }
+        ListFooterComponent={
+          <Text style={styles.note}>Movement varies day to day — what matters most is your baby{"'"}s usual pattern.</Text>
+        }
+        renderItem={({ item: day }) => (
+          <View style={styles.dayCard}>
             <TouchableOpacity style={styles.dayHeader} onPress={() => setExpanded(expanded === day.key ? null : day.key)}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.dayLabel}>{day.label}</Text>
@@ -202,24 +223,26 @@ export default function KickCounter() {
               </View>
             ))}
           </View>
-        ))}
-        <Text style={styles.note}>Movement varies day to day — what matters most is your baby{"'"}s usual pattern.</Text>
-      </ScrollView>
+        )}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  help: { flexDirection: 'row', gap: 9, backgroundColor: colors.accentSoft, borderRadius: radius.tile, padding: 13, marginBottom: 16 },
+  help: { flexDirection: 'row', gap: 9, backgroundColor: colors.accentSoft, borderRadius: radius.tile, paddingVertical: 13, paddingHorizontal: 15, marginBottom: 16 },
   helpText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: colors.accentDeep },
 
-  idleCard: { ...cardStyle, padding: 28, alignItems: 'center' },
+  idleCard: { ...cardStyle, paddingVertical: 28, paddingHorizontal: 22, alignItems: 'center' },
   idleIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   idleTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink, marginTop: 16 },
   idleSub: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: colors.muted, marginTop: 7, textAlign: 'center', maxWidth: 240 },
+  startBtn: { marginTop: 20, alignSelf: 'stretch', borderRadius: radius.cta, shadowColor: colors.accent, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.26, shadowRadius: 24, elevation: 6 },
+  startGrad: { alignItems: 'center', justifyContent: 'center', borderRadius: radius.cta, padding: 16 },
+  startText: { fontFamily: fonts.displaySemi, fontSize: 15, color: colors.white },
 
-  activeCard: { ...cardStyle, padding: 24, alignItems: 'center' },
+  activeCard: { ...cardStyle, paddingVertical: 24, paddingHorizontal: 20, alignItems: 'center' },
   elapsedLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.8, textTransform: 'uppercase', color: colors.muted },
   elapsedTime: { fontFamily: fonts.display, fontSize: 30, color: colors.ink, marginTop: 8 },
   tapShadow: { marginTop: 22, borderRadius: 118, shadowColor: colors.accent, shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.34, shadowRadius: 40, elevation: 8 },
@@ -231,8 +254,11 @@ const styles = StyleSheet.create({
   dot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.petal },
   dotOn: { backgroundColor: colors.accent },
   actionRow: { flexDirection: 'row', gap: 12, marginTop: 24, alignSelf: 'stretch' },
-  resetBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.chipBg, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: radius.cta, paddingVertical: 13 },
+  resetBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.chipBg, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: radius.cta, padding: 15 },
   resetText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.ink },
+  finishBtn: { flex: 1, borderRadius: radius.cta, shadowColor: colors.accent, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.26, shadowRadius: 24, elevation: 6 },
+  finishGrad: { alignItems: 'center', justifyContent: 'center', borderRadius: radius.cta, padding: 15 },
+  finishText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.white },
 
   historyHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 30, marginBottom: 14, paddingHorizontal: 2 },
   historyTitle: { fontFamily: fonts.display, fontSize: 19, color: colors.ink },
@@ -240,8 +266,8 @@ const styles = StyleSheet.create({
   filtersText: { fontFamily: fonts.body5, fontSize: 13, color: colors.accentDeep },
   filterBadge: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.accent, position: 'absolute', top: -2, right: -6 },
   filterPanel: { ...cardStyle, padding: 14, marginBottom: 14 },
-  filterLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.muted, marginBottom: 10 },
-  controls: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 6 },
+  filterLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', color: colors.muted, marginBottom: 10 },
+  controls: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 9, paddingHorizontal: 14, borderRadius: 100, backgroundColor: colors.chipBg, borderWidth: 1, borderColor: colors.cardBorder },
   chipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { fontFamily: fonts.body6, fontSize: 12, color: '#6E5560' },
@@ -255,5 +281,5 @@ const styles = StyleSheet.create({
   sessionKicks: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
   sessionDur: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
   empty: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted, textAlign: 'center', marginVertical: 24 },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginVertical: 16, paddingHorizontal: 16 },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 18, paddingHorizontal: 16 },
 });

@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12,
     borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
   },
-  cancel: { fontSize: 16, color: colors.muted, fontFamily: fonts.sansMed },
-  done: { fontSize: 16, color: colors.deepRose, fontFamily: fonts.sansBold },
+  cancel: { fontSize: 16, color: colors.muted, fontFamily: fonts.body5 },
+  done: { fontSize: 16, color: colors.accentDeep, fontFamily: fonts.displaySemi },
   picker: { alignSelf: 'stretch', height: 216 },
 });

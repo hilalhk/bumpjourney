@@ -53,7 +53,7 @@ export default function JournalEntry() {
       <ScreenGlow />
       <View style={styles.header}>
         <TouchableOpacity style={styles.circle} onPress={() => router.back()} activeOpacity={0.85}>
-          <Icon name="close" size={20} color={colors.bodyGrey} strokeWidth={2.2} />
+          <Icon name="close" size={20} color={colors.body} strokeWidth={2.2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{editing ? 'Edit entry' : 'New entry'}</Text>
         <TouchableOpacity onPress={save} disabled={saving || loading} hitSlop={8}>

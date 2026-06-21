@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export type Intensity = 'mild' | 'moderate' | 'severe';
 export type SymptomData = Record<string, Intensity>;

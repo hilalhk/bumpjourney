@@ -1,8 +1,9 @@
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image, Modal, ScrollView,
+  ActivityIndicator, Alert, FlatList, Modal,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { cardStyle } from '../components/Card';
@@ -96,39 +97,48 @@ export default function Photos() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 12 }} showsVerticalScrollIndicator={false}>
-        {loading && <ActivityIndicator color={colors.accent} style={{ marginTop: 32 }} />}
-        {!loading && photos.length === 0 && (
-          <View style={styles.emptyBox}>
-            <View style={styles.emptyIcon}><Icon name="images" size={28} color={colors.accent} /></View>
-            <Text style={styles.emptyText}>{kind === 'bump' ? 'No bump photos yet. Tap + to add your first.' : 'No ultrasound photos yet. Tap + to add one.'}</Text>
-          </View>
-        )}
-        {!loading && photos.map((p) => (
-          <View key={p.id} style={styles.photoCard}>
-            {p.url ? (
-              <Image source={{ uri: p.url }} style={styles.photo} resizeMode="cover" />
-            ) : (
-              <View style={[styles.photo, styles.photoPlaceholder]}><ActivityIndicator color={colors.accent} /></View>
-            )}
-            <View style={styles.photoMeta}>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                {p.week_number != null && <Text style={styles.photoWeek}>Week {p.week_number}</Text>}
-                <Text style={styles.photoDate}>{new Date(p.taken_on + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
-                {p.caption ? <Text style={styles.photoCaption}>{p.caption}</Text> : null}
-              </View>
-              <TouchableOpacity onPress={() => confirmDelete(p)} hitSlop={6}><Icon name="trash" size={18} color={colors.faint} /></TouchableOpacity>
+      {loading ? (
+        <ActivityIndicator color={colors.accent} style={{ marginTop: 32 }} />
+      ) : (
+        <FlatList
+          data={photos}
+          keyExtractor={(p) => p.id}
+          contentContainerStyle={{ padding: 20, paddingTop: 12 }}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyBox}>
+              <View style={styles.emptyIcon}><Icon name="images" size={28} color={colors.accent} /></View>
+              <Text style={styles.emptyText}>{kind === 'bump' ? 'No bump photos yet. Tap + to add your first.' : 'No ultrasound photos yet. Tap + to add one.'}</Text>
             </View>
-          </View>
-        ))}
-        <Text style={styles.note}>Your photos are private and stored securely. Only you can see them.</Text>
-      </ScrollView>
+          }
+          ListFooterComponent={
+            <Text style={styles.note}>Your photos are private and stored securely. Only you can see them.</Text>
+          }
+          renderItem={({ item: p }) => (
+            <View style={styles.photoCard}>
+              {p.url ? (
+                <Image source={{ uri: p.url }} style={styles.photo} contentFit="cover" transition={200} cachePolicy="memory-disk" />
+              ) : (
+                <View style={[styles.photo, styles.photoPlaceholder]}><ActivityIndicator color={colors.accent} /></View>
+              )}
+              <View style={styles.photoMeta}>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  {p.week_number != null && <Text style={styles.photoWeek}>Week {p.week_number}</Text>}
+                  <Text style={styles.photoDate}>{new Date(p.taken_on + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                  {p.caption ? <Text style={styles.photoCaption}>{p.caption}</Text> : null}
+                </View>
+                <TouchableOpacity onPress={() => confirmDelete(p)} hitSlop={6}><Icon name="trash" size={18} color={colors.faint} /></TouchableOpacity>
+              </View>
+            </View>
+          )}
+        />
+      )}
 
       <Modal visible={!!pending} animationType="slide" transparent>
         <View style={styles.modalWrap}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Add a caption</Text>
-            {pending && <Image source={{ uri: pending.uri }} style={styles.preview} resizeMode="cover" />}
+            {pending && <Image source={{ uri: pending.uri }} style={styles.preview} contentFit="cover" />}
             <TextInput style={styles.captionInput} placeholder="Optional caption…" placeholderTextColor={colors.faint} value={caption} onChangeText={setCaption} />
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.cancelBtn} onPress={() => { setPending(null); setPendingAsset(null); }} disabled={uploading}>
@@ -169,5 +179,5 @@ const styles = StyleSheet.create({
   captionInput: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 13, fontFamily: fonts.body5, fontSize: 14, color: colors.ink },
   modalActions: { flexDirection: 'row', gap: 10, marginTop: 16, alignItems: 'center' },
   cancelBtn: { flex: 1, padding: 14, borderRadius: radius.cta, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
-  cancelText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.bodyGrey },
+  cancelText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.body },
 });

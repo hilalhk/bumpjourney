@@ -9,7 +9,7 @@ import ScreenGlow from '../components/ScreenGlow';
 import { todayStr } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import { CATEGORIES, Intensity, SYMPTOM_LOOKUP, SymptomData } from '../lib/symptoms';
-import { colors, fonts, radius } from '../lib/theme';
+import { colors, fonts } from '../lib/theme';
 
 // Escalating intensity scale from the comp: amber → coral-pink → deep crimson.
 const LV: Record<Intensity, { dot: string; bg: string; border: string; text: string }> = {

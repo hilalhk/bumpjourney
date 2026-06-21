@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo, type ReactElement } from 'react';
 import { colors } from '../lib/theme';
 import {

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { BabyName, Gender, ORIGINS, searchNames } from '../lib/babyNames';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { colors, fonts } from '../lib/theme';
 
 type Tab = 'browse' | 'favorites';
 
@@ -104,21 +104,29 @@ export default function BabyNames() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        {tab === 'browse' && <Text style={styles.count}>{list.length} name{list.length !== 1 ? 's' : ''}</Text>}
-
-        {tab === 'favorites' && list.length === 0 && (
-          <View style={styles.emptyBox}>
-            <View style={styles.emptyIcon}><Icon name="heart" size={26} color={colors.accent} /></View>
-            <Text style={styles.emptyText}>No favourites yet. Tap the heart on any name to add it to your shortlist.</Text>
-          </View>
-        )}
-
-        {list.map((n) => {
+      <FlatList
+        data={list}
+        keyExtractor={keyOf}
+        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={tab === 'browse' ? <Text style={styles.count}>{list.length} name{list.length !== 1 ? 's' : ''}</Text> : null}
+        ListEmptyComponent={
+          tab === 'favorites' ? (
+            <View style={styles.emptyBox}>
+              <View style={styles.emptyIcon}><Icon name="heart" size={26} color={colors.accent} /></View>
+              <Text style={styles.emptyText}>No favourites yet. Tap the heart on any name to add it to your shortlist.</Text>
+            </View>
+          ) : (
+            <Text style={styles.noMatch}>No names match. Try a different search or filter.</Text>
+          )
+        }
+        ListFooterComponent={<Text style={styles.note}>Name meanings and origins are a guide and may vary by source and culture.</Text>}
+        renderItem={({ item: n }) => {
           const fav = favorites.has(keyOf(n));
           const t = TONE[n.gender] ?? TONE.unisex;
           return (
-            <View key={keyOf(n)} style={styles.card}>
+            <View style={styles.card}>
               <View style={[styles.genderDot, { backgroundColor: t.bg }]}>
                 <Icon name={n.gender === 'girl' ? 'gender-girl' : n.gender === 'boy' ? 'gender-boy' : 'gender-unisex'} size={17} color={t.color} />
               </View>
@@ -132,11 +140,8 @@ export default function BabyNames() {
               </TouchableOpacity>
             </View>
           );
-        })}
-
-        {tab === 'browse' && list.length === 0 && <Text style={styles.noMatch}>No names match. Try a different search or filter.</Text>}
-        <Text style={styles.note}>Name meanings and origins are a guide and may vary by source and culture.</Text>
-      </ScrollView>
+        }}
+      />
     </View>
   );
 }

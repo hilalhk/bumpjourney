@@ -1,7 +1,7 @@
+import { Image } from 'expo-image';
 import { useState } from 'react';
 import {
   Alert,
-  Image,
   KeyboardAvoidingView, Platform, ScrollView,
   StyleSheet,
   Text,
@@ -101,7 +101,7 @@ export default function Login() {
           {/* brand */}
           <View style={styles.brand}>
             <View style={styles.logoBox}>
-              <Image source={require('../assets/images/bumpjourney-logo.png')} style={styles.logoImg} resizeMode="cover" />
+              <Image source={require('../assets/images/bumpjourney-logo.png')} style={styles.logoImg} contentFit="cover" />
             </View>
             <Text style={styles.logo}>BumpJourney</Text>
             <Text style={styles.tagline}>Every week of your pregnancy, gently tracked in one calm place.</Text>

@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Dimensions, Image, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
 import GradientButton from '../components/GradientButton';
 import { Icon, IconName } from '../components/Icons';
@@ -77,7 +78,7 @@ export default function Intro() {
         {/* Slide 5 — companion */}
         <View style={[styles.page, { width: SCREEN_W }]}>
           <View style={styles.logoBox}>
-            <Image source={require('../assets/images/bumpjourney-logo.png')} style={styles.logoImg} resizeMode="cover" />
+            <Image source={require('../assets/images/bumpjourney-logo.png')} style={styles.logoImg} contentFit="cover" />
           </View>
           <Text style={[styles.title, { marginTop: 22 }]}>Everything You Need In One Pregnancy Companion</Text>
           <View style={styles.grid}>
@@ -119,7 +120,7 @@ function renderArt(i: number) {
     return (
       <View style={styles.artCircleWrap}>
         <View style={styles.artHalo} />
-        <Image source={require('../assets/images/illus-mother-1.png')} style={styles.artMother} resizeMode="cover" />
+        <Image source={require('../assets/images/illus-mother-1.png')} style={styles.artMother} contentFit="cover" />
         <FloatChip style={{ left: 0, top: 30 }} dot label="Week 24" />
         <FloatChip style={{ right: 0, top: 60 }} icon="timer" label="Contractions" />
         <FloatChip style={{ left: 10, bottom: 24 }} icon="footprint" label="10 kicks" />
@@ -169,8 +170,8 @@ function renderArt(i: number) {
   // i === 3
   return (
     <View style={styles.photoWrap}>
-      <Image source={require('../assets/images/illus-photo-1.png')} style={[styles.photo, { transform: [{ rotate: '-7deg' }], left: 20, top: 20 }]} resizeMode="cover" />
-      <Image source={require('../assets/images/illus-scan-2.png')} style={[styles.photo, { transform: [{ rotate: '6deg' }], right: 14, top: 8, width: 120, height: 144 }]} resizeMode="cover" />
+      <Image source={require('../assets/images/illus-photo-1.png')} style={[styles.photo, { transform: [{ rotate: '-7deg' }], left: 20, top: 20 }]} contentFit="cover" />
+      <Image source={require('../assets/images/illus-scan-2.png')} style={[styles.photo, { transform: [{ rotate: '6deg' }], right: 14, top: 8, width: 120, height: 144 }]} contentFit="cover" />
       <View style={styles.noteCard}>
         <View style={styles.noteHead}>
           <View style={styles.noteIcon}><Icon name="heart" size={13} color={colors.accent} fill /></View>

@@ -14,11 +14,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Session } from '@supabase/supabase-js';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../lib/theme';
 import { supabase } from '../lib/supabase';
+
+// Keep the native splash up until fonts, session, and the intro flag are all
+// resolved, so the first frame the user sees is the routed app — not a blank
+// canvas while async init finishes.
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
@@ -63,6 +69,12 @@ export default function RootLayout() {
       router.replace(introSeen ? '/login' : '/intro');
     }
   }, [session, loading, segments, fontsLoaded, introSeen]);
+
+  const ready = fontsLoaded && !loading && introSeen !== null;
+
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
 
   if (!fontsLoaded) return null;
 

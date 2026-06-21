@@ -8,7 +8,7 @@ import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { displayTime, todayStr } from '../lib/dates';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient, radius, shadow } from '../lib/theme';
+import { colors, fonts, gradient, shadow } from '../lib/theme';
 
 type Med = {
   id: string; name: string; dosage: string | null; frequency: string;

@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import DateTimeModal from '../components/DateTimeModal';
@@ -111,107 +111,115 @@ export default function ContractionTimer() {
       <ScreenGlow />
       <TopBar title="Contraction Timer" rightGlyph="help" onRightPress={() => setHelpOpen((h) => !h)} />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        {helpOpen && (
-          <View style={styles.help}>
-            <View style={{ marginTop: 1 }}><Icon name="info" size={16} color={colors.accentDeep} /></View>
-            <Text style={styles.helpText}>{HELP_TEXT}</Text>
-          </View>
-        )}
+      <FlatList
+        data={shown}
+        keyExtractor={(day) => day.key}
+        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            {helpOpen && (
+              <View style={styles.help}>
+                <View style={{ marginTop: 1 }}><Icon name="info" size={16} color={colors.accentDeep} /></View>
+                <Text style={styles.helpText}>{HELP_TEXT}</Text>
+              </View>
+            )}
 
-        <View style={{ alignItems: 'center' }}>
-          <TouchableOpacity activeOpacity={0.9} onPress={toggleContraction} style={styles.tapShadow}>
-            <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tapCircle}>
-              <View style={styles.tapInner} />
-              <Text style={styles.tapTimer}>{liveTimer}</Text>
-              <Text style={styles.tapLabel}>{active ? 'TAP WHEN IT ENDS' : 'TAP WHEN IT STARTS'}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
-        {liveRows.length > 0 && (
-          <View style={styles.liveList}>
-            {liveRows.map((c, i) => {
-              const idx = liveRows.length - i;
-              const duration = c.end ? formatMs(c.end - c.start) : formatMs(now - c.start);
-              const originalIndex = contractions.length - 1 - i;
-              const prev = originalIndex > 0 ? contractions[originalIndex - 1] : null;
-              const gap = prev ? formatMs(c.start - prev.start) : '—';
-              return (
-                <View key={c.start} style={[styles.liveRow, i === liveRows.length - 1 && styles.liveRowLast]}>
-                  <Text style={styles.liveNum}>#{idx}</Text>
-                  <View style={styles.liveCol}>
-                    <Text style={styles.liveLabel}>Duration</Text>
-                    <Text style={styles.liveValue}>{duration}</Text>
-                  </View>
-                  <View style={styles.liveCol}>
-                    <Text style={styles.liveLabel}>Frequency</Text>
-                    <Text style={styles.liveValue}>{gap}</Text>
-                  </View>
-                  <Text style={styles.liveTime}>{new Date(c.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {sessionStart && (
-          <TouchableOpacity style={styles.endBtn} onPress={endSession} activeOpacity={0.85}>
-            <Text style={styles.endText}>End & save session</Text>
-          </TouchableOpacity>
-        )}
-
-        <View style={styles.historyHeader}>
-          <Text style={styles.historyTitle}>Contraction history</Text>
-          <TouchableOpacity style={styles.filtersBtn} onPress={() => setFiltersOpen(!filtersOpen)}>
-            <Text style={styles.filtersText}>Filters</Text>
-            <Icon name="funnel" size={15} color={colors.accentDeep} />
-            {(sort !== 'recent' || filterDate) && <View style={styles.filterBadge} />}
-          </TouchableOpacity>
-        </View>
-
-        {filtersOpen && (
-          <View style={styles.filterPanel}>
-            <Text style={styles.filterLabel}>Sort by</Text>
-            <View style={styles.controls}>
-              {(['recent', 'most', 'least'] as SortMode[]).map((m) => (
-                <TouchableOpacity key={m} style={[styles.chip, sort === m && styles.chipOn]} onPress={() => setSort(m)}>
-                  <Text style={[styles.chipText, sort === m && styles.chipTextOn]}>
-                    {m === 'recent' ? 'Newest' : m === 'most' ? 'Most' : 'Fewest'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <Text style={styles.filterLabel}>Date</Text>
-            <View style={styles.controls}>
-              <TouchableOpacity style={[styles.chip, filterDate ? styles.chipOn : null]} onPress={() => setShowPicker(true)}>
-                <Icon name="calendar" size={13} color={filterDate ? colors.white : colors.muted} />
-                <Text style={[styles.chipText, filterDate ? styles.chipTextOn : null]}>{filterDate ? labelOf(filterDate) : 'Pick date'}</Text>
+            <View style={{ alignItems: 'center' }}>
+              <TouchableOpacity activeOpacity={0.9} onPress={toggleContraction} style={styles.tapShadow}>
+                <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tapCircle}>
+                  <View style={styles.tapInner} />
+                  <Text style={styles.tapTimer}>{liveTimer}</Text>
+                  <Text style={styles.tapLabel}>{active ? 'TAP WHEN IT ENDS' : 'TAP WHEN IT STARTS'}</Text>
+                </LinearGradient>
               </TouchableOpacity>
-              {filterDate && (
-                <TouchableOpacity style={styles.chip} onPress={() => setFilterDate(null)}>
-                  <Icon name="close" size={13} color={colors.muted} />
-                  <Text style={styles.chipText}>Clear</Text>
-                </TouchableOpacity>
-              )}
             </View>
-          </View>
-        )}
 
-        <DateTimeModal
-          visible={showPicker}
-          value={filterDate ? new Date(filterDate + 'T00:00:00') : new Date()}
-          mode="date"
-          onConfirm={(selected) => { setShowPicker(false); setFilterDate(dayKeyOf(selected.toISOString())); }}
-          onCancel={() => setShowPicker(false)}
-        />
+            {liveRows.length > 0 && (
+              <View style={styles.liveList}>
+                {liveRows.map((c, i) => {
+                  const idx = liveRows.length - i;
+                  const duration = c.end ? formatMs(c.end - c.start) : formatMs(now - c.start);
+                  const originalIndex = contractions.length - 1 - i;
+                  const prev = originalIndex > 0 ? contractions[originalIndex - 1] : null;
+                  const gap = prev ? formatMs(c.start - prev.start) : '—';
+                  return (
+                    <View key={c.start} style={[styles.liveRow, i === liveRows.length - 1 && styles.liveRowLast]}>
+                      <Text style={styles.liveNum}>#{idx}</Text>
+                      <View style={styles.liveCol}>
+                        <Text style={styles.liveLabel}>Duration</Text>
+                        <Text style={styles.liveValue}>{duration}</Text>
+                      </View>
+                      <View style={styles.liveCol}>
+                        <Text style={styles.liveLabel}>Frequency</Text>
+                        <Text style={styles.liveValue}>{gap}</Text>
+                      </View>
+                      <Text style={styles.liveTime}>{new Date(c.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
 
-        {historyLoading && <Text style={styles.empty}>Loading…</Text>}
-        {!historyLoading && shown.length === 0 && (
-          <Text style={styles.empty}>{filterDate ? 'No sessions on this date.' : 'No sessions yet — your history will appear here.'}</Text>
-        )}
-        {shown.map((day) => (
-          <View key={day.key} style={styles.dayCard}>
+            {sessionStart && (
+              <TouchableOpacity style={styles.endBtn} onPress={endSession} activeOpacity={0.85}>
+                <Text style={styles.endText}>End & save session</Text>
+              </TouchableOpacity>
+            )}
+
+            <View style={styles.historyHeader}>
+              <Text style={styles.historyTitle}>Contraction history</Text>
+              <TouchableOpacity style={styles.filtersBtn} onPress={() => setFiltersOpen(!filtersOpen)}>
+                <Text style={styles.filtersText}>Filters</Text>
+                <Icon name="funnel" size={15} color={colors.accentDeep} />
+                {(sort !== 'recent' || filterDate) && <View style={styles.filterBadge} />}
+              </TouchableOpacity>
+            </View>
+
+            {filtersOpen && (
+              <View style={styles.filterPanel}>
+                <Text style={styles.filterLabel}>Sort by</Text>
+                <View style={styles.controls}>
+                  {(['recent', 'most', 'least'] as SortMode[]).map((m) => (
+                    <TouchableOpacity key={m} style={[styles.chip, sort === m && styles.chipOn]} onPress={() => setSort(m)}>
+                      <Text style={[styles.chipText, sort === m && styles.chipTextOn]}>
+                        {m === 'recent' ? 'Newest' : m === 'most' ? 'Most' : 'Fewest'}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={styles.filterLabel}>Date</Text>
+                <View style={styles.controls}>
+                  <TouchableOpacity style={[styles.chip, filterDate ? styles.chipOn : null]} onPress={() => setShowPicker(true)}>
+                    <Icon name="calendar" size={13} color={filterDate ? colors.white : colors.muted} />
+                    <Text style={[styles.chipText, filterDate ? styles.chipTextOn : null]}>{filterDate ? labelOf(filterDate) : 'Pick date'}</Text>
+                  </TouchableOpacity>
+                  {filterDate && (
+                    <TouchableOpacity style={styles.chip} onPress={() => setFilterDate(null)}>
+                      <Icon name="close" size={13} color={colors.muted} />
+                      <Text style={styles.chipText}>Clear</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
+
+            <DateTimeModal
+              visible={showPicker}
+              value={filterDate ? new Date(filterDate + 'T00:00:00') : new Date()}
+              mode="date"
+              onConfirm={(selected) => { setShowPicker(false); setFilterDate(dayKeyOf(selected.toISOString())); }}
+              onCancel={() => setShowPicker(false)}
+            />
+
+            {historyLoading && <Text style={styles.empty}>Loading…</Text>}
+            {!historyLoading && shown.length === 0 && (
+              <Text style={styles.empty}>{filterDate ? 'No sessions on this date.' : 'No sessions yet — your history will appear here.'}</Text>
+            )}
+          </>
+        }
+        renderItem={({ item: day }) => (
+          <View style={styles.dayCard}>
             <TouchableOpacity style={styles.dayHeader} onPress={() => setExpanded(expanded === day.key ? null : day.key)}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.dayLabel}>{day.label}</Text>
@@ -227,8 +235,8 @@ export default function ContractionTimer() {
               </View>
             ))}
           </View>
-        ))}
-      </ScrollView>
+        )}
+      />
     </View>
   );
 }
