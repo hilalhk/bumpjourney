@@ -65,7 +65,8 @@ export default function KickCounter() {
   }
   function reset() { stopTimer(); setStartedAt(null); setKicks(0); setElapsed(0); }
   function recordKick() {
-    if (!startedAt) return;
+    // First tap on the circle starts the session, then counts as kick #1.
+    if (!startedAt) { start(); setKicks(1); return; }
     const next = kicks + 1;
     setKicks(next);
     if (next === 10) finish(next);
@@ -112,45 +113,32 @@ export default function KickCounter() {
               </View>
             )}
 
-            {!startedAt ? (
-              <View style={styles.idleCard}>
-                <View style={styles.idleIcon}><Icon name="footprint" size={34} color={colors.accent} strokeWidth={1.5} /></View>
-                <Text style={styles.idleTitle}>Ready to count?</Text>
-                <Text style={styles.idleSub}>Tap start, then tap the circle each time you feel baby move. We{"'"}ll log it after 10.</Text>
-                <TouchableOpacity onPress={start} activeOpacity={0.9} style={styles.startBtn}>
-                  <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startGrad}>
-                    <Text style={styles.startText}>Start session</Text>
+            <View style={styles.activeCard}>
+              <Text style={styles.elapsedLabel}>Elapsed</Text>
+              <Text style={styles.elapsedTime}>{formatSeconds(elapsed)}</Text>
+              <TouchableOpacity activeOpacity={0.9} onPress={recordKick} style={styles.tapShadow}>
+                <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tapCircle}>
+                  <View style={styles.tapInner} />
+                  <Text style={styles.tapNum}>{kicks}</Text>
+                  <Text style={styles.tapLabel}>TAP FOR EACH KICK</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <View style={styles.dots}>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <View key={i} style={[styles.dot, i < kicks && styles.dotOn]} />
+                ))}
+              </View>
+              <View style={styles.actionRow}>
+                <TouchableOpacity style={styles.resetBtn} onPress={reset} activeOpacity={0.85}>
+                  <Text style={styles.resetText}>Reset</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.finishBtn} onPress={startedAt ? () => finish() : start} activeOpacity={0.9}>
+                  <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.finishGrad}>
+                    <Text style={styles.finishText}>{startedAt ? 'Stop' : 'Start'}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
-            ) : (
-              <View style={styles.activeCard}>
-                <Text style={styles.elapsedLabel}>Elapsed</Text>
-                <Text style={styles.elapsedTime}>{formatSeconds(elapsed)}</Text>
-                <TouchableOpacity activeOpacity={0.9} onPress={recordKick} style={styles.tapShadow}>
-                  <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tapCircle}>
-                    <View style={styles.tapInner} />
-                    <Text style={styles.tapNum}>{kicks}</Text>
-                    <Text style={styles.tapLabel}>TAP FOR EACH KICK</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-                <View style={styles.dots}>
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <View key={i} style={[styles.dot, i < kicks && styles.dotOn]} />
-                  ))}
-                </View>
-                <View style={styles.actionRow}>
-                  <TouchableOpacity style={styles.resetBtn} onPress={reset} activeOpacity={0.85}>
-                    <Text style={styles.resetText}>Reset</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.finishBtn} onPress={() => finish()} activeOpacity={0.9}>
-                    <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.finishGrad}>
-                      <Text style={styles.finishText}>Finish</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
+            </View>
 
             <View style={styles.historyHeader}>
               <Text style={styles.historyTitle}>Kick history</Text>
@@ -233,14 +221,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
   help: { flexDirection: 'row', gap: 9, backgroundColor: colors.accentSoft, borderRadius: radius.tile, paddingVertical: 13, paddingHorizontal: 15, marginBottom: 16 },
   helpText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: colors.accentDeep },
-
-  idleCard: { ...cardStyle, paddingVertical: 28, paddingHorizontal: 22, alignItems: 'center' },
-  idleIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  idleTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink, marginTop: 16 },
-  idleSub: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: colors.muted, marginTop: 7, textAlign: 'center', maxWidth: 240 },
-  startBtn: { marginTop: 20, alignSelf: 'stretch', borderRadius: radius.cta, shadowColor: colors.accent, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.26, shadowRadius: 24, elevation: 6 },
-  startGrad: { alignItems: 'center', justifyContent: 'center', borderRadius: radius.cta, padding: 16 },
-  startText: { fontFamily: fonts.displaySemi, fontSize: 15, color: colors.white },
 
   activeCard: { ...cardStyle, paddingVertical: 24, paddingHorizontal: 20, alignItems: 'center' },
   elapsedLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.8, textTransform: 'uppercase', color: colors.muted },
