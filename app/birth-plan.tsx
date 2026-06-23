@@ -8,6 +8,7 @@ import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { supabase } from '../lib/supabase';
 import { colors, fonts } from '../lib/theme';
+import { firstName } from '../lib/user';
 
 function escapeHtml(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -62,6 +63,9 @@ export default function BirthPlan() {
   async function downloadPdf() {
     setDownloading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const planName = firstName(user);
+      const title = planName ? `${escapeHtml(planName)}'s Birth Plan` : 'My Birth Plan';
       const rows = QUESTIONS
         .filter((q) => answers[q.id])
         .map((q) => `<div class="row"><div class="q">${escapeHtml(q.question)}</div><div class="a">${escapeHtml(answers[q.id])}</div></div>`)
@@ -74,17 +78,17 @@ export default function BirthPlan() {
         <style>
           * { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; }
           body { margin: 40px; color: #3A1626; }
-          h1 { font-size: 28px; margin: 0 0 4px; }
-          .sub { color: #9A8390; font-size: 13px; margin-bottom: 28px; }
-          .row { border-bottom: 1px solid #F2E2E9; padding: 14px 0; }
-          .q { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #9A8390; }
-          .a { font-size: 16px; color: #3A1626; margin-top: 6px; }
-          .notes { margin-top: 24px; }
-          .notes p { font-size: 14px; line-height: 1.6; color: #3A1626; margin-top: 8px; }
-          .foot { color: #B7A7AE; font-size: 11px; margin-top: 40px; }
+          h1 { font-size: 32px; margin: 0 0 4px; color: #3A1626; }
+          .sub { color: #9A8390; font-size: 15px; margin-bottom: 30px; }
+          .row { border-bottom: 1px solid #F2E2E9; padding: 16px 0; }
+          .q { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #B83E66; }
+          .a { font-size: 19px; color: #3A1626; margin-top: 7px; }
+          .notes { margin-top: 26px; }
+          .notes p { font-size: 17px; line-height: 1.6; color: #3A1626; margin-top: 8px; }
+          .foot { color: #9A8390; font-size: 13px; margin-top: 40px; }
         </style></head>
         <body>
-          <h1>My Birth Plan</h1>
+          <h1>${title}</h1>
           <div class="sub">BumpJourney · ${today}</div>
           ${rows || '<div class="sub">No preferences selected yet.</div>'}
           ${notesBlock}

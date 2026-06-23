@@ -25,7 +25,7 @@ export type IconName =
   | 'blood' | 'alert' | 'bandage' | 'person' | 'heart' | 'bag' | 'medical'
   | 'document' | 'star' | 'bulb' | 'ear' | 'eye' | 'eye-off' | 'check'
   | 'images' | 'mail' | 'lock' | 'download' | 'arrow-right' | 'globe'
-  | 'gift' | 'sliders' | 'external'
+  | 'gift' | 'sliders' | 'external' | 'logout'
   | 'gender-girl' | 'gender-boy' | 'gender-unisex'
   | 'verdict-safe' | 'verdict-caution' | 'verdict-avoid';
 
@@ -66,6 +66,7 @@ const G: Record<IconName, El[]> = {
   hospital: [['p', 'M3 21h18M5 21V7l7-4 7 4v14M10 9h4M10 13h4M10 17h4']],
   blood: [['p', 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z']],
   alert: [['p', 'M12 9v4M12 17h0.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z']],
+  logout: [['p', 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'], ['p', 'M16 17l5-5-5-5'], ['p', 'M21 12H9']],
   bandage: [['p', 'M14.5 3.5 20.5 9.5 9.5 20.5 3.5 14.5z'], ['p', 'M9 9l6 6']],
   person: [['p', 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'], ['c', 12, 7, 4]],
   heart: [['p', 'M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 5a5 5 0 0 1 9.5 7c-2.5 4.5-9.5 9-9.5 9z']],
@@ -88,7 +89,7 @@ const G: Record<IconName, El[]> = {
   sliders: [['l', 4, 7, 13, 7], ['l', 17, 7, 20, 7], ['c', 15, 7, 2], ['l', 4, 17, 9, 17], ['l', 13, 17, 20, 17], ['c', 11, 17, 2]],
   external: [['p', 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'], ['pl', '15 3 21 3 21 9'], ['l', 10, 14, 21, 3]],
   'gender-girl': [['p', 'M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 13v8M9 18h6']],
-  'gender-boy': [['p', 'M10 14a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM10 14l8-8M14 4h4v4']],
+  'gender-boy': [['p', 'M9.5 20a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13.4 11.1 20 4.5M14.5 4.5H20v5.5']],
   'gender-unisex': [['p', 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 16v6M9 19h6M12 8 17 3M14 3h3v3']],
   'verdict-safe': [['c', 12, 12, 10], ['p', 'M8 12.5l2.5 2.5 5-5']],
   'verdict-caution': [['c', 12, 12, 10], ['p', 'M12 7.5v5'], ['l', 12, 16, 12.01, 16]],

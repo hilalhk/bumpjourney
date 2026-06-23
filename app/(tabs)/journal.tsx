@@ -1,7 +1,8 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../../components/Card';
+import { useConfirm } from '../../components/ConfirmDialog';
 import { Icon } from '../../components/Icons';
 import ScreenGlow from '../../components/ScreenGlow';
 import { getPrompts } from '../../lib/journalPrompts';
@@ -19,6 +20,7 @@ type Entry = {
 
 export default function Journal() {
   const router = useRouter();
+  const confirm = useConfirm();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [week, setWeek] = useState<number>(4);
   const [loading, setLoading] = useState(true);
@@ -43,14 +45,14 @@ export default function Journal() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  function confirmDelete(entry: Entry) {
-    Alert.alert('Delete entry', 'Remove this journal entry? This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete', style: 'destructive',
-        onPress: async () => { await supabase.from('journal_entries').delete().eq('id', entry.id); load(); },
-      },
-    ]);
+  async function confirmDelete(entry: Entry) {
+    const ok = await confirm({
+      tone: 'danger', icon: 'trash', title: 'Delete entry',
+      message: 'Remove this journal entry? This cannot be undone.', confirmLabel: 'Delete',
+    });
+    if (!ok) return;
+    await supabase.from('journal_entries').delete().eq('id', entry.id);
+    load();
   }
 
   const prompts = getPrompts(week);

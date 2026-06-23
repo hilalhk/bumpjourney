@@ -3,6 +3,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
+import { useConfirm } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
@@ -60,22 +61,29 @@ export default function Settings() {
     setEditingName(false);
   }
 
-  function confirmSignOut() {
-    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign out', style: 'destructive', onPress: () => supabase.auth.signOut() },
-    ]);
+  const confirm = useConfirm();
+
+  async function confirmSignOut() {
+    const ok = await confirm({
+      tone: 'accent', icon: 'logout', title: 'Sign out',
+      message: 'Are you sure you want to sign out?', confirmLabel: 'Sign out',
+    });
+    if (ok) supabase.auth.signOut();
   }
 
-  function confirmDelete() {
-    Alert.alert('Delete account', 'This permanently deletes your account and all your data — pregnancy details, symptoms, kick and contraction history, and journal entries. This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete everything', style: 'destructive', onPress: () =>
-        Alert.alert('Are you absolutely sure?', 'There is no way to recover your data after this.', [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Delete my account', style: 'destructive', onPress: doDelete },
-        ]) },
-    ]);
+  async function confirmDelete() {
+    const ok = await confirm({
+      tone: 'danger', icon: 'alert', title: 'Delete account',
+      message: 'This permanently deletes your account and all your data — pregnancy details, symptoms, kick and contraction history, and journal entries. This cannot be undone.',
+      confirmLabel: 'Delete everything',
+    });
+    if (!ok) return;
+    const sure = await confirm({
+      tone: 'danger', icon: 'alert', title: 'Are you absolutely sure?',
+      message: 'There is no way to recover your data after this.',
+      confirmLabel: 'Delete forever', cancelLabel: 'Keep account',
+    });
+    if (sure) doDelete();
   }
 
   async function doDelete() {

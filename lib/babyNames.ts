@@ -167,6 +167,166 @@ export const NAMES: BabyName[] = [
   { name: 'Sage', gender: 'unisex', meaning: 'Wise; the herb', origin: 'Latin' },
   { name: 'Sam', gender: 'unisex', meaning: 'God has heard', origin: 'Hebrew' },
   { name: 'Sky', gender: 'unisex', meaning: 'The sky', origin: 'English' },
+
+  // ---- Origin coverage: ensures every origin has at least 10 names ----
+  // Aramaic
+  { name: 'Martha', gender: 'girl', meaning: 'Lady, mistress', origin: 'Aramaic' },
+  { name: 'Tabitha', gender: 'girl', meaning: 'Gazelle', origin: 'Aramaic' },
+  { name: 'Talitha', gender: 'girl', meaning: 'Little girl, maiden', origin: 'Aramaic' },
+  { name: 'Magdalena', gender: 'girl', meaning: 'Woman of Magdala', origin: 'Aramaic' },
+  { name: 'Marta', gender: 'girl', meaning: 'Lady (form of Martha)', origin: 'Aramaic' },
+  { name: 'Bartholomew', gender: 'boy', meaning: 'Son of Talmai', origin: 'Aramaic' },
+  { name: 'Thaddeus', gender: 'boy', meaning: 'Courageous heart', origin: 'Aramaic' },
+  { name: 'Cephas', gender: 'boy', meaning: 'Rock, stone', origin: 'Aramaic' },
+  { name: 'Maron', gender: 'boy', meaning: 'Little lord', origin: 'Aramaic' },
+
+  // Irish
+  { name: 'Saoirse', gender: 'girl', meaning: 'Freedom, liberty', origin: 'Irish' },
+  { name: 'Aoife', gender: 'girl', meaning: 'Beauty, radiance', origin: 'Irish' },
+  { name: 'Niamh', gender: 'girl', meaning: 'Bright, radiant', origin: 'Irish' },
+  { name: 'Ciara', gender: 'girl', meaning: 'Dark-haired', origin: 'Irish' },
+  { name: 'Maeve', gender: 'girl', meaning: 'She who intoxicates', origin: 'Irish' },
+  { name: 'Cian', gender: 'boy', meaning: 'Ancient, enduring', origin: 'Irish' },
+  { name: 'Cillian', gender: 'boy', meaning: 'Bright-headed; strife', origin: 'Irish' },
+  { name: 'Declan', gender: 'boy', meaning: 'Full of goodness', origin: 'Irish' },
+  { name: 'Ronan', gender: 'boy', meaning: 'Little seal', origin: 'Irish' },
+
+  // Japanese
+  { name: 'Sakura', gender: 'girl', meaning: 'Cherry blossom', origin: 'Japanese' },
+  { name: 'Yui', gender: 'girl', meaning: 'Gentle, superior', origin: 'Japanese' },
+  { name: 'Aoi', gender: 'girl', meaning: 'Hollyhock; blue', origin: 'Japanese' },
+  { name: 'Yuki', gender: 'unisex', meaning: 'Snow; happiness', origin: 'Japanese' },
+  { name: 'Akira', gender: 'unisex', meaning: 'Bright, clear', origin: 'Japanese' },
+  { name: 'Sora', gender: 'unisex', meaning: 'Sky', origin: 'Japanese' },
+  { name: 'Haruki', gender: 'boy', meaning: 'Shining sun; spring child', origin: 'Japanese' },
+  { name: 'Hiroshi', gender: 'boy', meaning: 'Generous, prosperous', origin: 'Japanese' },
+  { name: 'Ren', gender: 'boy', meaning: 'Lotus; love', origin: 'Japanese' },
+
+  // Norse
+  { name: 'Astrid', gender: 'girl', meaning: 'Divinely beautiful', origin: 'Norse' },
+  { name: 'Sigrid', gender: 'girl', meaning: 'Beautiful victory', origin: 'Norse' },
+  { name: 'Ingrid', gender: 'girl', meaning: 'Beautiful, fair', origin: 'Norse' },
+  { name: 'Saga', gender: 'girl', meaning: 'Seeing one; story', origin: 'Norse' },
+  { name: 'Erik', gender: 'boy', meaning: 'Eternal ruler', origin: 'Norse' },
+  { name: 'Bjorn', gender: 'boy', meaning: 'Bear', origin: 'Norse' },
+  { name: 'Leif', gender: 'boy', meaning: 'Heir, descendant', origin: 'Norse' },
+  { name: 'Sven', gender: 'boy', meaning: 'Young man', origin: 'Norse' },
+  { name: 'Thor', gender: 'boy', meaning: 'Thunder', origin: 'Norse' },
+
+  // Scottish
+  { name: 'Skye', gender: 'girl', meaning: 'From the Isle of Skye', origin: 'Scottish' },
+  { name: 'Ailsa', gender: 'girl', meaning: 'Elf victory', origin: 'Scottish' },
+  { name: 'Maisie', gender: 'girl', meaning: 'Pearl', origin: 'Scottish' },
+  { name: 'Lorna', gender: 'girl', meaning: 'From Lorne', origin: 'Scottish' },
+  { name: 'Hamish', gender: 'boy', meaning: 'Supplanter (form of James)', origin: 'Scottish' },
+  { name: 'Lachlan', gender: 'boy', meaning: 'From the land of lakes', origin: 'Scottish' },
+  { name: 'Callum', gender: 'boy', meaning: 'Dove', origin: 'Scottish' },
+  { name: 'Rory', gender: 'unisex', meaning: 'Red king', origin: 'Scottish' },
+  { name: 'Blair', gender: 'unisex', meaning: 'Plain, field', origin: 'Scottish' },
+
+  // Spanish
+  { name: 'Paloma', gender: 'girl', meaning: 'Dove', origin: 'Spanish' },
+  { name: 'Dolores', gender: 'girl', meaning: 'Sorrows', origin: 'Spanish' },
+  { name: 'Pilar', gender: 'girl', meaning: 'Pillar', origin: 'Spanish' },
+  { name: 'Consuelo', gender: 'girl', meaning: 'Consolation', origin: 'Spanish' },
+  { name: 'Mercedes', gender: 'girl', meaning: 'Mercies', origin: 'Spanish' },
+  { name: 'Santiago', gender: 'boy', meaning: 'Saint James', origin: 'Spanish' },
+  { name: 'Diego', gender: 'boy', meaning: 'Supplanter', origin: 'Spanish' },
+  { name: 'Javier', gender: 'boy', meaning: 'Bright; new house', origin: 'Spanish' },
+  { name: 'Cruz', gender: 'unisex', meaning: 'Cross', origin: 'Spanish' },
+
+  // Turkish
+  { name: 'Derya', gender: 'girl', meaning: 'Ocean', origin: 'Turkish' },
+  { name: 'Defne', gender: 'girl', meaning: 'Laurel', origin: 'Turkish' },
+  { name: 'Selin', gender: 'girl', meaning: 'Flowing water', origin: 'Turkish' },
+  { name: 'Yagmur', gender: 'girl', meaning: 'Rain', origin: 'Turkish' },
+  { name: 'Deniz', gender: 'unisex', meaning: 'Sea', origin: 'Turkish' },
+  { name: 'Emre', gender: 'boy', meaning: 'Friend, beloved', origin: 'Turkish' },
+  { name: 'Mert', gender: 'boy', meaning: 'Brave, manly', origin: 'Turkish' },
+  { name: 'Kaan', gender: 'boy', meaning: 'King, ruler', origin: 'Turkish' },
+  { name: 'Baris', gender: 'boy', meaning: 'Peace', origin: 'Turkish' },
+
+  // Celtic
+  { name: 'Bridget', gender: 'girl', meaning: 'Strength; exalted one', origin: 'Celtic' },
+  { name: 'Gwen', gender: 'girl', meaning: 'White, fair, blessed', origin: 'Celtic' },
+  { name: 'Tegan', gender: 'girl', meaning: 'Fair, lovely', origin: 'Celtic' },
+  { name: 'Brenna', gender: 'girl', meaning: 'Raven; little drop', origin: 'Celtic' },
+  { name: 'Tristan', gender: 'boy', meaning: 'Tumult; sorrowful', origin: 'Celtic' },
+  { name: 'Gareth', gender: 'boy', meaning: 'Gentle', origin: 'Celtic' },
+  { name: 'Morgan', gender: 'unisex', meaning: 'Sea-born; sea circle', origin: 'Celtic' },
+  { name: 'Kerry', gender: 'unisex', meaning: 'Dark-haired; from Kerry', origin: 'Celtic' },
+
+  // French
+  { name: 'Genevieve', gender: 'girl', meaning: 'Tribe woman; white wave', origin: 'French' },
+  { name: 'Amelie', gender: 'girl', meaning: 'Hardworking, industrious', origin: 'French' },
+  { name: 'Colette', gender: 'girl', meaning: 'Victory of the people', origin: 'French' },
+  { name: 'Margaux', gender: 'girl', meaning: 'Pearl', origin: 'French' },
+  { name: 'Elodie', gender: 'girl', meaning: 'Foreign riches', origin: 'French' },
+  { name: 'Camille', gender: 'unisex', meaning: 'Young ceremonial attendant', origin: 'French' },
+  { name: 'Louis', gender: 'boy', meaning: 'Renowned warrior', origin: 'French' },
+  { name: 'Remy', gender: 'boy', meaning: 'Oarsman; from Rheims', origin: 'French' },
+
+  // Hawaiian
+  { name: 'Leilani', gender: 'girl', meaning: 'Heavenly flowers', origin: 'Hawaiian' },
+  { name: 'Kailani', gender: 'girl', meaning: 'Sea and sky', origin: 'Hawaiian' },
+  { name: 'Moana', gender: 'girl', meaning: 'Ocean', origin: 'Hawaiian' },
+  { name: 'Nalani', gender: 'girl', meaning: 'The heavens', origin: 'Hawaiian' },
+  { name: 'Mahina', gender: 'girl', meaning: 'Moon', origin: 'Hawaiian' },
+  { name: 'Kalani', gender: 'unisex', meaning: 'The heavens, the sky', origin: 'Hawaiian' },
+  { name: 'Keanu', gender: 'boy', meaning: 'Cool mountain breeze', origin: 'Hawaiian' },
+  { name: 'Koa', gender: 'boy', meaning: 'Warrior; brave', origin: 'Hawaiian' },
+
+  // Italian
+  { name: 'Giulia', gender: 'girl', meaning: 'Youthful', origin: 'Italian' },
+  { name: 'Francesca', gender: 'girl', meaning: 'Free one', origin: 'Italian' },
+  { name: 'Gianna', gender: 'girl', meaning: 'God is gracious', origin: 'Italian' },
+  { name: 'Chiara', gender: 'girl', meaning: 'Bright, clear', origin: 'Italian' },
+  { name: 'Leonardo', gender: 'boy', meaning: 'Brave as a lion', origin: 'Italian' },
+  { name: 'Marco', gender: 'boy', meaning: 'Warlike; of Mars', origin: 'Italian' },
+  { name: 'Lorenzo', gender: 'boy', meaning: 'From Laurentum; laurel', origin: 'Italian' },
+
+  // Persian
+  { name: 'Roxana', gender: 'girl', meaning: 'Dawn, bright', origin: 'Persian' },
+  { name: 'Soraya', gender: 'girl', meaning: 'The Pleiades', origin: 'Persian' },
+  { name: 'Nasrin', gender: 'girl', meaning: 'Wild rose', origin: 'Persian' },
+  { name: 'Parisa', gender: 'girl', meaning: 'Like a fairy', origin: 'Persian' },
+  { name: 'Darius', gender: 'boy', meaning: 'Possessing goodness', origin: 'Persian' },
+  { name: 'Cyrus', gender: 'boy', meaning: 'Sun; lord', origin: 'Persian' },
+  { name: 'Arman', gender: 'boy', meaning: 'Hope, aspiration', origin: 'Persian' },
+
+  // Slavic
+  { name: 'Nadia', gender: 'girl', meaning: 'Hope', origin: 'Slavic' },
+  { name: 'Milena', gender: 'girl', meaning: 'Gracious, dear', origin: 'Slavic' },
+  { name: 'Zora', gender: 'girl', meaning: 'Dawn', origin: 'Slavic' },
+  { name: 'Anya', gender: 'girl', meaning: 'Grace', origin: 'Slavic' },
+  { name: 'Bogdan', gender: 'boy', meaning: 'Given by God', origin: 'Slavic' },
+  { name: 'Vladimir', gender: 'boy', meaning: 'Ruler of peace; great power', origin: 'Slavic' },
+  { name: 'Boris', gender: 'boy', meaning: 'Fighter', origin: 'Slavic' },
+
+  // Sanskrit
+  { name: 'Ananya', gender: 'girl', meaning: 'Unique, incomparable', origin: 'Sanskrit' },
+  { name: 'Asha', gender: 'girl', meaning: 'Hope, wish', origin: 'Sanskrit' },
+  { name: 'Aarav', gender: 'boy', meaning: 'Peaceful; melodic sound', origin: 'Sanskrit' },
+  { name: 'Arjun', gender: 'boy', meaning: 'Bright, shining; white', origin: 'Sanskrit' },
+  { name: 'Kiran', gender: 'unisex', meaning: 'Ray of light', origin: 'Sanskrit' },
+  { name: 'Ravi', gender: 'boy', meaning: 'Sun', origin: 'Sanskrit' },
+
+  // Welsh
+  { name: 'Gwyneth', gender: 'girl', meaning: 'Blessed, happy', origin: 'Welsh' },
+  { name: 'Carys', gender: 'girl', meaning: 'Love', origin: 'Welsh' },
+  { name: 'Eira', gender: 'girl', meaning: 'Snow', origin: 'Welsh' },
+  { name: 'Megan', gender: 'girl', meaning: 'Pearl', origin: 'Welsh' },
+  { name: 'Bryn', gender: 'unisex', meaning: 'Hill', origin: 'Welsh' },
+  { name: 'Lloyd', gender: 'boy', meaning: 'Grey; sacred', origin: 'Welsh' },
+
+  // Gaelic
+  { name: 'Brianna', gender: 'girl', meaning: 'Strong, virtuous, noble', origin: 'Gaelic' },
+  { name: 'Sloane', gender: 'unisex', meaning: 'Raider', origin: 'Gaelic' },
+  { name: 'Brody', gender: 'boy', meaning: 'Ditch; from Brodie', origin: 'Gaelic' },
+  { name: 'Nolan', gender: 'boy', meaning: 'Champion; noble', origin: 'Gaelic' },
+
+  // Germanic
+  { name: 'Frieda', gender: 'girl', meaning: 'Peaceful', origin: 'Germanic' },
 ];
 
 export const ORIGINS = Array.from(new Set(NAMES.map((n) => n.origin))).sort();

@@ -191,7 +191,8 @@ export default function MedicationDetail() {
         )}
 
         <Text style={styles.note}>
-          Mark doses as taken from the home screen. This log is for your reference only.
+          Mark doses as taken from the home screen. This log is for tracking only — always follow the dose and schedule
+          your healthcare provider gives you.
         </Text>
       </ScrollView>
     </View>

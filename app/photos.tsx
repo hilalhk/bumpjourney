@@ -7,6 +7,7 @@ import {
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { cardStyle } from '../components/Card';
+import { useConfirm } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -21,6 +22,7 @@ type Photo = {
 };
 
 export default function Photos() {
+  const confirm = useConfirm();
   const params = useLocalSearchParams<{ kind?: string }>();
   const [kind, setKind] = useState<'bump' | 'ultrasound'>(params.kind === 'ultrasound' ? 'ultrasound' : 'bump');
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -67,11 +69,15 @@ export default function Photos() {
     setPending(null); setPendingAsset(null); setCaption(''); setLoading(true); loadPhotos();
   }
 
-  function confirmDelete(p: Photo) {
-    Alert.alert('Delete photo', 'Remove this photo permanently?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => { await deletePhoto(p.id, p.storage_path); setLoading(true); loadPhotos(); } },
-    ]);
+  async function confirmDelete(p: Photo) {
+    const ok = await confirm({
+      tone: 'danger', icon: 'trash', title: 'Delete photo',
+      message: 'Remove this photo permanently?', confirmLabel: 'Delete',
+    });
+    if (!ok) return;
+    await deletePhoto(p.id, p.storage_path);
+    setLoading(true);
+    loadPhotos();
   }
 
   return (

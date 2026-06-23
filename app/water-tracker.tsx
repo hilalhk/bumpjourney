@@ -96,8 +96,8 @@ export default function WaterTracker() {
         )}
 
         <Text style={styles.note}>
-          Aim for around 8 glasses (1.5–2 litres) a day. Your needs may be higher in hot weather or later in
-          pregnancy — listen to your body.
+          Aim for around 8 glasses (1.5–2 litres) a day. This is general guidance, not medical advice — your needs
+          vary with weather, activity, and stage of pregnancy, so check with your provider about what{"'"}s right for you.
         </Text>
       </ScrollView>
     </View>

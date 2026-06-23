@@ -6,6 +6,7 @@ import {
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { cardStyle } from '../components/Card';
+import { useConfirm } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
@@ -23,6 +24,7 @@ type Appt = {
 const COMMON_TITLES = ['Prenatal checkup', 'Ultrasound scan', 'Blood test', 'Glucose test', 'Midwife visit'];
 
 export default function Appointments() {
+  const confirm = useConfirm();
   const [appts, setAppts] = useState<Appt[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,15 +74,15 @@ export default function Appointments() {
     load();
   }
 
-  function confirmDelete(a: Appt) {
-    Alert.alert('Delete appointment', `Remove "${a.title}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        await cancelReminder(a.notify_id);
-        await supabase.from('appointments').delete().eq('id', a.id);
-        load();
-      } },
-    ]);
+  async function confirmDelete(a: Appt) {
+    const ok = await confirm({
+      tone: 'danger', icon: 'trash', title: 'Delete appointment',
+      message: `Remove "${a.title}"?`, confirmLabel: 'Delete',
+    });
+    if (!ok) return;
+    await cancelReminder(a.notify_id);
+    await supabase.from('appointments').delete().eq('id', a.id);
+    load();
   }
 
   const now = new Date();
@@ -164,6 +166,10 @@ export default function Appointments() {
 
         {past.length > 0 && <Text style={styles.sectionLabel}>Past</Text>}
         {past.map((a) => renderAppt(a, 'past'))}
+
+        {appts.length > 0 && (
+          <Text style={styles.note}>Reminders are a convenience, not a substitute for your care schedule — always follow the appointments and advice your provider gives you.</Text>
+        )}
       </ScrollView>
 
       <Modal visible={showForm} animationType="slide" transparent>
@@ -234,6 +240,7 @@ const styles = StyleSheet.create({
   emptyBox: { alignItems: 'center', marginTop: 48, gap: 16 },
   emptyIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   empty: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted, textAlign: 'center' },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 22, paddingHorizontal: 14 },
 
   banner: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: radius.tile, padding: 16, marginTop: 4 },
   bannerIcon: { width: 46, height: 46, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },

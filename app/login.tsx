@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  KeyboardAvoidingView, Platform, ScrollView,
+  Keyboard, Platform, ScrollView,
   StyleSheet,
   Text,
   TextInput, TouchableOpacity,
@@ -11,6 +12,7 @@ import {
 import Svg, { Circle, Path, Polyline, Rect } from 'react-native-svg';
 import GradientButton from '../components/GradientButton';
 import ScreenGlow from '../components/ScreenGlow';
+import { signInWithGoogle } from '../lib/googleAuth';
 import { supabase } from '../lib/supabase';
 import { colors, fonts } from '../lib/theme';
 
@@ -47,14 +49,53 @@ function PersonIcon() {
     </Svg>
   );
 }
+function GoogleG() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 48 48">
+      <Path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <Path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <Path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <Path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </Svg>
+  );
+}
 
 export default function Login() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  async function onGoogle() {
+    setGoogleLoading(true);
+    const { ok, error } = await signInWithGoogle();
+    setGoogleLoading(false);
+    // On success the root layout routes into the app via the new session.
+    if (!ok && error) Alert.alert('Google sign-in', error);
+  }
+
+  // The form scrolls; on Android (edge-to-edge) the window doesn't resize for the
+  // keyboard, so we pad the content by the keyboard height and scroll the focused
+  // field into view instead of letting the keyboard cover it.
+  const scrollRef = useRef<ScrollView>(null);
+  const [kbHeight, setKbHeight] = useState(0);
+
+  const scrollToFocused = () => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 60);
+
+  useEffect(() => {
+    const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showSub = Keyboard.addListener(showEvt, (e) => {
+      setKbHeight(e.endCoordinates.height);
+      scrollToFocused();
+    });
+    const hideSub = Keyboard.addListener(hideEvt, () => setKbHeight(0));
+    return () => { showSub.remove(); hideSub.remove(); };
+  }, []);
 
   async function submit() {
     if (!email.trim() || !password) {
@@ -71,13 +112,23 @@ export default function Login() {
       setLoading(false);
       if (error) Alert.alert('Could not sign in', error.message);
     } else {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: { data: { full_name: name.trim() } },
       });
       setLoading(false);
-      if (error) Alert.alert('Could not sign up', error.message);
+      if (error) { Alert.alert('Could not sign up', error.message); return; }
+      // Supabase returns a user with no identities when the email already exists
+      // (it hides this to prevent account enumeration) — steer them to sign in.
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        Alert.alert('Already registered', 'This email already has an account. Try signing in instead.');
+        return;
+      }
+      // With email confirmation on, no session exists until the code is verified.
+      if (!data.session) {
+        router.push({ pathname: '/verify-email', params: { email: email.trim() } });
+      }
     }
   }
 
@@ -96,8 +147,12 @@ export default function Login() {
   return (
     <View style={styles.root}>
       <ScreenGlow intensity={0.22} />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={[styles.scroll, { paddingBottom: 48 + kbHeight }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
           {/* brand */}
           <View style={styles.brand}>
             <View style={styles.logoBox}>
@@ -120,6 +175,7 @@ export default function Login() {
                     placeholderTextColor={colors.faint}
                     value={name}
                     onChangeText={setName}
+                    onFocus={scrollToFocused}
                     autoCapitalize="words"
                     autoCorrect={false}
                   />
@@ -136,6 +192,7 @@ export default function Login() {
                 placeholderTextColor={colors.faint}
                 value={email}
                 onChangeText={setEmail}
+                onFocus={scrollToFocused}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 autoCorrect={false}
@@ -158,6 +215,7 @@ export default function Login() {
                 placeholderTextColor={colors.faint}
                 value={password}
                 onChangeText={setPassword}
+                onFocus={scrollToFocused}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
               />
@@ -172,6 +230,17 @@ export default function Login() {
               disabled={loading}
               style={{ marginTop: 18 }}
             />
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TouchableOpacity style={styles.googleBtn} onPress={onGoogle} disabled={googleLoading} activeOpacity={0.85}>
+              <GoogleG />
+              <Text style={styles.googleText}>{googleLoading ? 'Signing in…' : 'Continue with Google'}</Text>
+            </TouchableOpacity>
           </View>
 
           {/* switch */}
@@ -188,8 +257,7 @@ export default function Login() {
             By continuing you agree to our <Text style={styles.disclaimerLink}>Terms</Text> and{' '}
             <Text style={styles.disclaimerLink}>Privacy Policy</Text>.
           </Text>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </ScrollView>
     </View>
   );
 }
@@ -216,6 +284,16 @@ const styles = StyleSheet.create({
     borderRadius: 14, paddingHorizontal: 14, height: 52,
   },
   input: { flex: 1, fontSize: 15, color: colors.ink, fontFamily: fonts.body5, paddingVertical: 0 },
+
+  divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 20 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: colors.cardBorder },
+  dividerText: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted },
+  googleBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    height: 52, marginTop: 16, borderRadius: 14,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder,
+  },
+  googleText: { fontFamily: fonts.body6, fontSize: 15, color: colors.ink },
 
   switch: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 28 },
   switchText: { fontSize: 13, color: colors.muted, fontFamily: fonts.body5 },

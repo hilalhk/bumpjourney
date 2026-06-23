@@ -265,6 +265,11 @@ export default function Home() {
             <TouchableOpacity onPress={() => setSelectedDay(todayKey)}><Text style={styles.backToday}>↩ Back to today</Text></TouchableOpacity>
           </>
         )}
+
+        <Text style={styles.disclaimer}>
+          Weekly updates, sizes, and milestones are general guidance for a typical pregnancy, not medical advice —
+          every pregnancy is different. Check with your provider about anything specific to you.
+        </Text>
       </ScrollView>
     </View>
   );
@@ -345,4 +350,5 @@ const styles = StyleSheet.create({
   statK: { fontFamily: fonts.body6, fontSize: 9, color: colors.muted, marginTop: 2, letterSpacing: 0.5 },
   emptyText: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
   backToday: { textAlign: 'center', color: colors.accent, fontFamily: fonts.displaySemi, fontSize: 14, paddingVertical: 14 },
+  disclaimer: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 24, paddingHorizontal: 14 },
 });

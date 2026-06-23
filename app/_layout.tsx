@@ -18,6 +18,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { ConfirmProvider } from '../components/ConfirmDialog';
 import { colors } from '../lib/theme';
 import { supabase } from '../lib/supabase';
 
@@ -60,9 +61,12 @@ export default function RootLayout() {
     if (loading || !fontsLoaded || introSeen === null) return;
     const onLogin = segments[0] === 'login';
     const onIntro = segments[0] === 'intro';
+    // verify-email is reached while still signed out (a session only exists once
+    // the code is confirmed), so it must be allowed alongside login/intro.
+    const onVerify = segments[0] === 'verify-email';
     if (session) {
-      if (onLogin || onIntro) router.replace('/');
-    } else if (!onLogin && !onIntro) {
+      if (onLogin || onIntro || onVerify) router.replace('/');
+    } else if (!onLogin && !onIntro && !onVerify) {
       // Not signed in and not already on an auth screen: route to intro (first
       // run) or login. Once on intro/login we don't bounce, so finishing the
       // intro can navigate to /login without the stale introSeen flag fighting it.
@@ -82,7 +86,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }} edges={['top']}>
         <StatusBar style="dark" backgroundColor={colors.canvas} />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }} />
+        <ConfirmProvider>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }} />
+        </ConfirmProvider>
       </SafeAreaView>
     </SafeAreaProvider>
   );

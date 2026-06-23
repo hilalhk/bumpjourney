@@ -192,7 +192,7 @@ export default function KickCounter() {
           </>
         }
         ListFooterComponent={
-          <Text style={styles.note}>Movement varies day to day — what matters most is your baby{"'"}s usual pattern.</Text>
+          <Text style={styles.note}>For tracking only, not medical advice. Movement varies day to day, but if you notice reduced or changed movement, contact your healthcare provider right away.</Text>
         }
         renderItem={({ item: day }) => (
           <View style={styles.dayCard}>

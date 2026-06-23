@@ -34,6 +34,7 @@ export default function ContractionTimer() {
   const [contractions, setContractions] = useState<Contraction[]>([]);
   const [now, setNow] = useState(Date.now());
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastTapRef = useRef(0);
 
   const [days, setDays] = useState<DayGroup[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -71,11 +72,15 @@ export default function ContractionTimer() {
   }, [active]);
 
   function toggleContraction() {
+    const t = Date.now();
+    // Ignore accidental rapid double-taps (a real contraction is never <0.3s).
+    if (t - lastTapRef.current < 300) return;
+    lastTapRef.current = t;
     if (!sessionStart) setSessionStart(new Date());
     setContractions((prev) => {
       const next = [...prev];
-      if (active) next[next.length - 1] = { ...next[next.length - 1], end: Date.now() };
-      else next.push({ start: Date.now(), end: null });
+      if (active) next[next.length - 1] = { ...next[next.length - 1], end: t };
+      else next.push({ start: t, end: null });
       return next;
     });
   }
@@ -106,6 +111,19 @@ export default function ContractionTimer() {
 
   const liveTimer = active ? formatMs(now - contractions[contractions.length - 1].start) : '0:00';
 
+  // 5-1-1 readout: averages over contractions started within the last hour.
+  // Duration averages completed contractions; "apart" is the start-to-start interval.
+  const HOUR_MS = 60 * 60 * 1000;
+  const recent = contractions.filter((c) => c.start >= now - HOUR_MS);
+  const recentDone = recent.filter((c) => c.end !== null);
+  const avgLength = recentDone.length
+    ? recentDone.reduce((s, c) => s + ((c.end as number) - c.start), 0) / recentDone.length
+    : null;
+  const intervals = recent.slice(1).map((c, i) => c.start - recent[i].start);
+  const avgApart = intervals.length ? intervals.reduce((s, v) => s + v, 0) / intervals.length : null;
+  const showSummary = contractions.length >= 2;
+  const fiveOneOne = avgApart != null && avgApart <= 5 * 60 * 1000 && avgLength != null && avgLength >= 55 * 1000;
+
   return (
     <View style={styles.container}>
       <ScreenGlow />
@@ -134,6 +152,35 @@ export default function ContractionTimer() {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
+
+            {showSummary && (
+              <View style={styles.summary}>
+                <View style={styles.sumStat}>
+                  <Text style={styles.sumValue}>{recent.length}</Text>
+                  <Text style={styles.sumLabel}>LAST HOUR</Text>
+                </View>
+                <View style={styles.sumDivider} />
+                <View style={styles.sumStat}>
+                  <Text style={styles.sumValue}>{avgApart != null ? formatMs(avgApart) : '—'}</Text>
+                  <Text style={styles.sumLabel}>AVG APART</Text>
+                </View>
+                <View style={styles.sumDivider} />
+                <View style={styles.sumStat}>
+                  <Text style={styles.sumValue}>{avgLength != null ? formatMs(avgLength) : '—'}</Text>
+                  <Text style={styles.sumLabel}>AVG LENGTH</Text>
+                </View>
+              </View>
+            )}
+
+            {showSummary && fiveOneOne && (
+              <View style={styles.pattern}>
+                <View style={{ marginTop: 1 }}><Icon name="info" size={15} color={colors.accentDeep} /></View>
+                <Text style={styles.patternText}>
+                  These are about 5 minutes apart and a minute long — the 5-1-1 pattern. If it keeps up for an hour,
+                  check in with your provider or maternity unit.
+                </Text>
+              </View>
+            )}
 
             {liveRows.length > 0 && (
               <View style={styles.liveList}>
@@ -218,6 +265,9 @@ export default function ContractionTimer() {
             )}
           </>
         }
+        ListFooterComponent={
+          <Text style={styles.note}>For tracking only, not medical advice. If contractions become regular and closer together, or you have any concerns, contact your provider or maternity unit.</Text>
+        }
         renderItem={({ item: day }) => (
           <View style={styles.dayCard}>
             <TouchableOpacity style={styles.dayHeader} onPress={() => setExpanded(expanded === day.key ? null : day.key)}>
@@ -252,6 +302,14 @@ const styles = StyleSheet.create({
   tapTimer: { fontFamily: fonts.display, fontSize: 56, color: colors.white },
   tapLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.6, color: 'rgba(255,255,255,0.9)', marginTop: 8 },
 
+  summary: { ...cardStyle, flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 8, marginTop: 16 },
+  sumStat: { flex: 1, alignItems: 'center' },
+  sumValue: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
+  sumLabel: { fontFamily: fonts.body6, fontSize: 9, letterSpacing: 0.8, color: colors.muted, marginTop: 4 },
+  sumDivider: { width: 1, alignSelf: 'stretch', backgroundColor: colors.cardBorder, marginVertical: 4 },
+  pattern: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', backgroundColor: colors.accentSoft, borderRadius: radius.tile, padding: 13, marginTop: 12 },
+  patternText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 17, color: colors.accentDeep },
+
   liveList: { ...cardStyle, paddingHorizontal: 16, paddingVertical: 6, marginTop: 14 },
   liveRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: colors.cardBorder },
   liveRowLast: { borderBottomWidth: 0 },
@@ -284,4 +342,5 @@ const styles = StyleSheet.create({
   sessionCount: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
   sessionDur: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
   empty: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted, textAlign: 'center', marginVertical: 24 },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 18, paddingHorizontal: 16 },
 });

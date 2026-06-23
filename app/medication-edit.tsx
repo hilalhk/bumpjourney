@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { dayKey, displayTime } from '../lib/dates';
+import { useConfirm } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -35,6 +36,7 @@ function parseTime(t: string) {
 
 export default function MedicationEdit() {
   const router = useRouter();
+  const confirm = useConfirm();
   const params = useLocalSearchParams<{ id?: string }>();
   const editing = !!params.id;
 
@@ -111,15 +113,16 @@ export default function MedicationEdit() {
     router.back();
   }
 
-  function confirmRemove() {
-    Alert.alert('Remove medication', `Remove "${name || 'this medication'}"? This also removes its history.`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: async () => {
-        await cancelMedReminders(oldNotifyIds);
-        await supabase.from('medications').delete().eq('id', params.id);
-        router.back();
-      } },
-    ]);
+  async function confirmRemove() {
+    const ok = await confirm({
+      tone: 'danger', icon: 'trash', title: 'Remove medication',
+      message: `Remove "${name || 'this medication'}"? This also removes its history.`,
+      confirmLabel: 'Remove',
+    });
+    if (!ok) return;
+    await cancelMedReminders(oldNotifyIds);
+    await supabase.from('medications').delete().eq('id', params.id);
+    router.back();
   }
 
   return (

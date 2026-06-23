@@ -4,7 +4,7 @@
     "slug": "BumpJourney",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/bumpjourney-logo.png",
     "scheme": "bumpjourney",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.bumpjourney.app",
       "adaptiveIcon": {
         "backgroundColor": "#FAE3EA",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -30,21 +31,29 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/bumpjourney-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#FAE3EA",
           "dark": {
             "backgroundColor": "#000000"
           }
         }
       ],
       "@react-native-community/datetimepicker",
-      "expo-font"
+      "expo-font",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "86c7eaa4-16dc-4114-b739-0548415ef544"
+      }
+    },
+    "owner": "hilalhk"
   }
 }
