@@ -5,6 +5,8 @@ import { cardStyle } from '../../components/Card';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { Icon } from '../../components/Icons';
 import ScreenGlow from '../../components/ScreenGlow';
+import TabHeader from '../../components/TabHeader';
+import { usePregnancy, weekSubtitle } from '../../hooks/usePregnancy';
 import { getPrompts } from '../../lib/journalPrompts';
 import { supabase } from '../../lib/supabase';
 import { colors, fonts, radius } from '../../lib/theme';
@@ -21,6 +23,7 @@ type Entry = {
 export default function Journal() {
   const router = useRouter();
   const confirm = useConfirm();
+  const info = usePregnancy();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [week, setWeek] = useState<number>(4);
   const [loading, setLoading] = useState(true);
@@ -59,6 +62,7 @@ export default function Journal() {
 
   const header = (
     <>
+      <TabHeader subtitle={weekSubtitle(info)} />
       <View style={styles.headerRow}>
         <Text style={styles.title}>Journal</Text>
         <TouchableOpacity style={styles.photosBtn} onPress={() => router.push('/photos')} activeOpacity={0.85}>
@@ -144,7 +148,7 @@ export default function Journal() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.canvas },
   scroll: { padding: 20, paddingTop: 14, paddingBottom: 140 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 26 },
   title: { fontFamily: fonts.display, fontSize: 30, color: colors.ink },
   photosBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,

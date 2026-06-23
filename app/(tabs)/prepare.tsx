@@ -4,7 +4,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { cardStyle } from '../../components/Card';
 import { Icon, IconName } from '../../components/Icons';
 import ScreenGlow from '../../components/ScreenGlow';
-import { usePregnancy } from '../../hooks/usePregnancy';
+import TabHeader from '../../components/TabHeader';
+import { usePregnancy, weekSubtitle } from '../../hooks/usePregnancy';
 import { colors, fonts, gradient, radius, shadow } from '../../lib/theme';
 
 const TOOLS: { route: string; icon: IconName; title: string; sub: string }[] = [
@@ -22,6 +23,7 @@ export default function Prepare() {
     <View style={styles.root}>
       <ScreenGlow />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <TabHeader subtitle={weekSubtitle(info)} />
         <Text style={styles.title}>Prepare</Text>
         <Text style={styles.subtitle}>Get ready for the big day, one step at a time.</Text>
 
@@ -63,7 +65,7 @@ export default function Prepare() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.canvas },
   scroll: { padding: 20, paddingTop: 14, paddingBottom: 140 },
-  title: { fontFamily: fonts.display, fontSize: 30, color: colors.ink, marginTop: 12 },
+  title: { fontFamily: fonts.display, fontSize: 30, color: colors.ink, marginTop: 26 },
   subtitle: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted, marginTop: 6 },
 
   banner: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: radius.tile, padding: 16, marginTop: 18 },

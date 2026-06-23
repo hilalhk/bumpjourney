@@ -110,7 +110,7 @@ export default function BabyNames() {
         contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={tab === 'browse' ? <Text style={styles.count}>{list.length} name{list.length !== 1 ? 's' : ''}</Text> : null}
+        ListHeaderComponent={tab === 'browse' ? <Text style={styles.count}>{list.length} name{list.length !== 1 ? 's' : ''}</Text> : <View style={{ height: 16 }} />}
         ListEmptyComponent={
           tab === 'favorites' ? (
             <View style={styles.emptyBox}>

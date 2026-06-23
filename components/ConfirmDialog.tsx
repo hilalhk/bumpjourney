@@ -57,7 +57,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               {opts.message ? <Text style={styles.message}>{opts.message}</Text> : null}
               <View style={styles.row}>
                 <TouchableOpacity style={styles.cancelBtn} onPress={() => close(false)} activeOpacity={0.85}>
-                  <Text style={styles.cancelText}>{opts.cancelLabel ?? 'Cancel'}</Text>
+                  <Text style={styles.cancelText} numberOfLines={1} adjustsFontSizeToFit>{opts.cancelLabel ?? 'Cancel'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.confirmBtn, isDanger ? styles.dangerShadow : styles.accentShadow]}
@@ -65,7 +65,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                   activeOpacity={0.9}
                 >
                   <LinearGradient colors={isDanger ? DANGER.grad : gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.confirmGrad}>
-                    <Text style={styles.confirmText}>{opts.confirmLabel ?? 'Confirm'}</Text>
+                    <Text style={styles.confirmText} numberOfLines={1} adjustsFontSizeToFit>{opts.confirmLabel ?? 'Confirm'}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -88,10 +88,10 @@ const styles = StyleSheet.create({
   message: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 20, color: colors.muted, textAlign: 'center', marginTop: 10 },
   row: { flexDirection: 'row', gap: 10, marginTop: 22, alignSelf: 'stretch' },
   cancelBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F4ECEF', borderRadius: 15, padding: 14 },
-  cancelText: { fontFamily: fonts.displaySemi, fontSize: 14, color: '#6E5560' },
+  cancelText: { fontFamily: fonts.displaySemi, fontSize: 14, color: '#6E5560', textAlign: 'center' },
   confirmBtn: { flex: 1, borderRadius: 15 },
   confirmGrad: { alignItems: 'center', justifyContent: 'center', borderRadius: 15, padding: 14 },
-  confirmText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.white },
+  confirmText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.white, textAlign: 'center' },
   dangerShadow: { shadowColor: '#9E2740', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.28, shadowRadius: 22, elevation: 6 },
   accentShadow: { shadowColor: colors.accent, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.26, shadowRadius: 22, elevation: 6 },
 });

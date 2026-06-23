@@ -66,6 +66,7 @@ export default function Home() {
   // past-day review
   const [kickStats, setKickStats] = useState({ sessions: 0, kicks: 0, avgMin: 0 });
   const [conStats, setConStats] = useState({ sessions: 0, count: 0, avgSec: 0 });
+  const [medStats, setMedStats] = useState<{ id: string; name: string; taken: number; skipped: number }[]>([]);
 
   const todayKey = dayKey(new Date());
   const isToday = selectedDay === todayKey;
@@ -107,11 +108,14 @@ export default function Home() {
     (async () => {
       const dayStart = new Date(selectedDay + 'T00:00:00');
       const dayEnd = new Date(selectedDay + 'T23:59:59.999');
-      const [{ data: kicks }, { data: cons }] = await Promise.all([
+      const [{ data: kicks }, { data: cons }, { data: meds }, { data: medLogs }] = await Promise.all([
         supabase.from('kick_sessions').select('started_at, ended_at, kick_count')
           .gte('started_at', dayStart.toISOString()).lte('started_at', dayEnd.toISOString()),
         supabase.from('contraction_sessions').select('started_at, contractions')
           .gte('started_at', dayStart.toISOString()).lte('started_at', dayEnd.toISOString()),
+        // Meds that had a schedule on this day, plus that day's taken-dose logs.
+        supabase.from('medications').select('id, name, times, start_date').lte('start_date', selectedDay),
+        supabase.from('medication_logs').select('medication_id').eq('log_date', selectedDay),
       ]);
       const ks = kicks ?? [];
       const totalKicks = ks.reduce((s, k) => s + k.kick_count, 0);
@@ -126,6 +130,19 @@ export default function Home() {
         ? Math.round(all.reduce((s, c) => s + (new Date(c.end).getTime() - new Date(c.start).getTime()) / 1000, 0) / all.length)
         : 0;
       setConStats({ sessions: cs.length, count: all.length, avgSec });
+
+      // Taken = number of logged doses that day (capped at the scheduled count);
+      // anything scheduled but not logged counts as skipped.
+      const countByMed: Record<string, number> = {};
+      (medLogs ?? []).forEach((l) => { countByMed[l.medication_id] = (countByMed[l.medication_id] ?? 0) + 1; });
+      const ms = (meds ?? [])
+        .filter((m) => (m.times?.length ?? 0) > 0)
+        .map((m) => {
+          const total = (m.times ?? []).length;
+          const taken = Math.min(countByMed[m.id] ?? 0, total);
+          return { id: m.id, name: m.name, taken, skipped: total - taken };
+        });
+      setMedStats(ms);
     })();
   }, [selectedDay, isToday]);
 
@@ -262,6 +279,26 @@ export default function Home() {
                 </View>
               )}
             </View>
+            <View style={styles.reviewCard}>
+              <View style={styles.reviewHead}>
+                <Icon name="pill" size={16} color={colors.accentDeep} />
+                <Text style={styles.reviewTitle}>Medications</Text>
+                <TouchableOpacity onPress={() => router.push('/medications')}><Text style={styles.viewAll}>View all ›</Text></TouchableOpacity>
+              </View>
+              {medStats.length === 0 ? (
+                <Text style={styles.emptyText}>No medications scheduled this day.</Text>
+              ) : (
+                medStats.map((m) => (
+                  <View key={m.id} style={styles.medRow}>
+                    <Text style={styles.medName} numberOfLines={1}>{m.name}</Text>
+                    <Text style={styles.medStatus}>
+                      <Text style={styles.medTaken}>{m.taken} taken</Text>
+                      {m.skipped > 0 ? <Text style={styles.medSkipped}>  ·  {m.skipped} missed</Text> : null}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </View>
             <TouchableOpacity onPress={() => setSelectedDay(todayKey)}><Text style={styles.backToday}>↩ Back to today</Text></TouchableOpacity>
           </>
         )}
@@ -349,6 +386,11 @@ const styles = StyleSheet.create({
   statV: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
   statK: { fontFamily: fonts.body6, fontSize: 9, color: colors.muted, marginTop: 2, letterSpacing: 0.5 },
   emptyText: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
+  medRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 6 },
+  medName: { fontFamily: fonts.body5, fontSize: 13, color: colors.ink, flex: 1 },
+  medStatus: { fontFamily: fonts.body6, fontSize: 12 },
+  medTaken: { fontFamily: fonts.body6, fontSize: 12, color: '#5E9E78' },
+  medSkipped: { fontFamily: fonts.body6, fontSize: 12, color: colors.faint },
   backToday: { textAlign: 'center', color: colors.accent, fontFamily: fonts.displaySemi, fontSize: 14, paddingVertical: 14 },
   disclaimer: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 24, paddingHorizontal: 14 },
 });

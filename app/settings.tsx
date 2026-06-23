@@ -75,7 +75,7 @@ export default function Settings() {
     const ok = await confirm({
       tone: 'danger', icon: 'alert', title: 'Delete account',
       message: 'This permanently deletes your account and all your data — pregnancy details, symptoms, kick and contraction history, and journal entries. This cannot be undone.',
-      confirmLabel: 'Delete everything',
+      confirmLabel: 'Delete account',
     });
     if (!ok) return;
     const sure = await confirm({

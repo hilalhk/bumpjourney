@@ -2,11 +2,22 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import { memo, useCallback, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { dayKey } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import { colors, fonts, gradient } from '../lib/theme';
 
 const WEEKDAY = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+// SVG circle so the log dot is always perfectly round — a tiny borderRadius
+// View renders as a square on some Android devices.
+function Dot({ color }: { color: string }) {
+  return (
+    <Svg width={6} height={6} style={{ marginTop: 6 }}>
+      <Circle cx={3} cy={3} r={3} fill={color} />
+    </Svg>
+  );
+}
 
 type Props = { selected: string; onSelect: (key: string) => void };
 
@@ -58,7 +69,7 @@ function DayStrip({ selected, onSelect }: Props) {
               <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.pillActive}>
                 <Text style={[styles.weekday, styles.weekdayOn]}>{WEEKDAY[d.getDay()]}</Text>
                 <Text style={[styles.num, styles.numOn]}>{d.getDate()}</Text>
-                <View style={[styles.dot, { backgroundColor: colors.white }]} />
+                <Dot color={colors.white} />
               </LinearGradient>
             </TouchableOpacity>
           );
@@ -68,7 +79,7 @@ function DayStrip({ selected, onSelect }: Props) {
             <View style={styles.pill}>
               <Text style={styles.weekday}>{WEEKDAY[d.getDay()]}</Text>
               <Text style={styles.num}>{d.getDate()}</Text>
-              <View style={[styles.dot, { backgroundColor: hasData ? colors.accent : 'transparent' }]} />
+              <Dot color={hasData ? colors.accent : 'transparent'} />
             </View>
           </TouchableOpacity>
         );
@@ -94,5 +105,4 @@ const styles = StyleSheet.create({
   weekdayOn: { color: 'rgba(255,255,255,0.85)' },
   num: { fontFamily: fonts.display, fontSize: 16, color: colors.ink, marginTop: 6 },
   numOn: { color: colors.white },
-  dot: { width: 5, height: 5, borderRadius: 3, marginTop: 5 },
 });

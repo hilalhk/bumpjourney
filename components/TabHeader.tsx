@@ -8,7 +8,7 @@ import { dayKey } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import { colors, fonts, gradient, shadow } from '../lib/theme';
 import { firstName } from '../lib/user';
-import { BellIcon, Icon } from './Icons';
+import { BellIcon } from './Icons';
 
 type Props = { subtitle: string; name?: string };
 
@@ -50,13 +50,15 @@ export default function TabHeader({ subtitle, name: nameProp }: Props) {
 
   return (
     <View style={styles.row}>
-      <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>
-        <Text style={styles.avatarText}>{initial}</Text>
-      </LinearGradient>
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={styles.name} numberOfLines={1}>{name}</Text>
-        <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>
-      </View>
+      <TouchableOpacity style={styles.profile} onPress={() => router.push('/settings')} activeOpacity={0.7}>
+        <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>
+          <Text style={styles.avatarText}>{initial}</Text>
+        </LinearGradient>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={styles.name} numberOfLines={1}>{name}</Text>
+          <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>
+        </View>
+      </TouchableOpacity>
       <View style={styles.actions}>
         <TouchableOpacity onPress={handleSOS} activeOpacity={0.85}>
           <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.sos}>
@@ -67,9 +69,6 @@ export default function TabHeader({ subtitle, name: nameProp }: Props) {
           <BellIcon size={17} color={colors.ink} />
           {hasNotifications && <View style={styles.dot} />}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.circle} onPress={() => router.push('/settings')} activeOpacity={0.85}>
-          <Icon name="sliders" size={17} color={colors.ink} strokeWidth={1.9} />
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -77,6 +76,7 @@ export default function TabHeader({ subtitle, name: nameProp }: Props) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  profile: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11, minWidth: 0 },
   avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', ...shadow.accent },
   avatarText: { fontFamily: fonts.displaySemi, fontSize: 17, color: colors.white },
   name: { fontFamily: fonts.displaySemi, fontSize: 16, color: colors.ink },
