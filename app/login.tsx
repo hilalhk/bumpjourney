@@ -134,14 +134,12 @@ export default function Login() {
 
   async function forgotPassword() {
     if (!email.trim()) {
-      Alert.alert('Enter your email', 'Type your email above first, then tap Forgot again to get a reset link.');
+      Alert.alert('Enter your email', 'Type your email above first, then tap "Forgot password?" again.');
       return;
     }
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-    Alert.alert(
-      error ? 'Error' : 'Check your email',
-      error ? error.message : 'We sent you a link to reset your password.'
-    );
+    if (error) { Alert.alert('Could not send code', error.message); return; }
+    router.push({ pathname: '/reset-password', params: { email: email.trim() } });
   }
 
   return (

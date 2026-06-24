@@ -64,9 +64,10 @@ export default function RootLayout() {
     // verify-email is reached while still signed out (a session only exists once
     // the code is confirmed), so it must be allowed alongside login/intro.
     const onVerify = segments[0] === 'verify-email';
+    const onReset = segments[0] === 'reset-password';
     if (session) {
-      if (onLogin || onIntro || onVerify) router.replace('/');
-    } else if (!onLogin && !onIntro && !onVerify) {
+      if (onLogin || onIntro || onVerify || onReset) router.replace('/');
+    } else if (!onLogin && !onIntro && !onVerify && !onReset) {
       // Not signed in and not already on an auth screen: route to intro (first
       // run) or login. Once on intro/login we don't bounce, so finishing the
       // intro can navigate to /login without the stale introSeen flag fighting it.

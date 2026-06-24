@@ -17,9 +17,12 @@ function LumiDock({ state, navigation }: any) {
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 16) }]} pointerEvents="box-none">
       <View style={styles.dock}>
-        {state.routes.map((route: any, index: number) => {
-          const tab = TABS.find((t) => t.name === route.name);
-          if (!tab) return null;
+        {TABS.map((tab) => {
+          // Render in the explicit TABS order (Home | Health | Journal | Prepare),
+          // independent of how expo-router orders state.routes.
+          const index = state.routes.findIndex((r: any) => r.name === tab.name);
+          if (index === -1) return null;
+          const route = state.routes[index];
           const focused = state.index === index;
           const Icon = tab.Icon;
           const onPress = () => {
@@ -36,7 +39,7 @@ function LumiDock({ state, navigation }: any) {
                   end={{ x: 1, y: 1 }}
                   style={styles.tabActive}
                 >
-                  <Icon size={22} color={colors.white} filled />
+                  <Icon size={22} color={colors.white} />
                   <Text style={[styles.label, styles.labelActive]}>{tab.label}</Text>
                 </LinearGradient>
               </TouchableOpacity>

@@ -4,7 +4,7 @@
     "slug": "BumpJourney",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/bumpjourney-logo.png",
+    "icon": "./assets/images/app-icon.png",
     "scheme": "bumpjourney",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -14,10 +14,8 @@
     "android": {
       "package": "com.bumpjourney.app",
       "adaptiveIcon": {
-        "backgroundColor": "#FAE3EA",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#CE4F7A",
+        "foregroundImage": "./assets/images/app-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
