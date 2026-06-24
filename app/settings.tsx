@@ -187,11 +187,11 @@ export default function Settings() {
 
         <Text style={styles.sectionLabel}>About</Text>
         <View style={styles.card}>
-          <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://example.com/privacy')} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://bumpjourney.app/legal-desktop.html#privacy')} activeOpacity={0.7}>
             <Text style={styles.rowLabel}>Privacy policy</Text>
             <Icon name="external" size={15} color={colors.faint} />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.linkRow, styles.rowBorder]} onPress={() => Linking.openURL('https://example.com/terms')} activeOpacity={0.7}>
+          <TouchableOpacity style={[styles.linkRow, styles.rowBorder]} onPress={() => Linking.openURL('https://bumpjourney.app/legal-desktop.html#terms')} activeOpacity={0.7}>
             <Text style={styles.rowLabel}>Terms of service</Text>
             <Icon name="external" size={15} color={colors.faint} />
           </TouchableOpacity>

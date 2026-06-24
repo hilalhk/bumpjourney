@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  Keyboard, Platform, ScrollView,
+  Keyboard, Linking, Platform, ScrollView,
   StyleSheet,
   Text,
   TextInput, TouchableOpacity,
@@ -252,8 +252,9 @@ export default function Login() {
           </View>
 
           <Text style={styles.disclaimer}>
-            By continuing you agree to our <Text style={styles.disclaimerLink}>Terms</Text> and{' '}
-            <Text style={styles.disclaimerLink}>Privacy Policy</Text>.
+            By continuing you agree to our{' '}
+            <Text style={styles.disclaimerLink} onPress={() => Linking.openURL('https://bumpjourney.app/legal-desktop.html#terms')}>Terms</Text> and{' '}
+            <Text style={styles.disclaimerLink} onPress={() => Linking.openURL('https://bumpjourney.app/legal-desktop.html#privacy')}>Privacy Policy</Text>.
           </Text>
       </ScrollView>
     </View>
