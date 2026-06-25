@@ -27,6 +27,7 @@ export default function EditBabies() {
   const [existing, setExisting] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   // Keyboard-aware scrolling: on Android (edge-to-edge) the keyboard covers
   // lower name fields, so we track its height (to pad the scroll) and scroll the
@@ -48,11 +49,15 @@ export default function EditBabies() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from('prep_data').select('payload').eq('kind', 'pregnancy_details').maybeSingle();
+      const [{ data }, { data: favs }] = await Promise.all([
+        supabase.from('prep_data').select('payload').eq('kind', 'pregnancy_details').maybeSingle(),
+        supabase.from('name_favorites').select('name').order('created_at', { ascending: false }),
+      ]);
       const info = readBabies(data?.payload);
       setCount(info.count);
       setBabies(info.babies);
       setExisting(data?.payload ?? {});
+      setFavorites([...new Set((favs ?? []).map((f) => f.name as string))]);
       setLoading(false);
     })();
   }, []);
@@ -130,6 +135,21 @@ export default function EditBabies() {
                   onFocus={() => scrollToCard(i)}
                   autoCapitalize="words"
                 />
+                {favorites.length > 0 && (
+                  <View style={styles.suggestWrap}>
+                    <Text style={styles.suggestLabel}>From your shortlist</Text>
+                    <View style={styles.suggestChips}>
+                      {favorites.map((nm) => {
+                        const on = baby.name.trim() === nm;
+                        return (
+                          <TouchableOpacity key={nm} style={[styles.suggestChip, on && styles.suggestChipOn]} onPress={() => setName(i, on ? '' : nm)} activeOpacity={0.85}>
+                            <Text style={[styles.suggestChipText, on && styles.suggestChipTextOn]}>{nm}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
               </View>
             ))}
 
@@ -159,4 +179,11 @@ const styles = StyleSheet.create({
   sexText: { fontFamily: fonts.body6, fontSize: 13, color: colors.ink },
   sexTextOn: { color: colors.white },
   nameInput: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 13, marginTop: 10, fontFamily: fonts.body5, fontSize: 14, color: colors.ink },
+  suggestWrap: { marginTop: 12 },
+  suggestLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: colors.muted, marginBottom: 8 },
+  suggestChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  suggestChip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 100, backgroundColor: colors.accentSoft },
+  suggestChipOn: { backgroundColor: colors.accent },
+  suggestChipText: { fontFamily: fonts.body6, fontSize: 12, color: colors.accentDeep },
+  suggestChipTextOn: { color: colors.white },
 });
