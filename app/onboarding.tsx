@@ -38,7 +38,7 @@ export default function Onboarding() {
   const router = useRouter();
   const [step, setStep] = useState<'method' | 'date' | 'babies' | 'done'>('method');
   const [method, setMethod] = useState<DueMethod>('due');
-  const [babyCount, setBabyCount] = useState(1);
+  const [babyChoice, setBabyChoice] = useState<number | 'unsure'>(1);
   const [date, setDate] = useState(new Date());
   const [weeks, setWeeks] = useState('');
   const [days, setDays] = useState('');
@@ -67,7 +67,9 @@ export default function Onboarding() {
     });
     if (error) { setSaving(false); showAlert({ title: 'Error', message: error.message, tone: 'error' }); return; }
     // Save how many babies; per-baby gender/name can be set later in Settings.
-    const payload = babiesPayload({ count: babyCount, babies: Array.from({ length: babyCount }, () => ({ sex: null, name: '' })) });
+    // "Not sure yet" defaults to one baby — they can change it in Settings.
+    const count = babyChoice === 'unsure' ? 1 : babyChoice;
+    const payload = babiesPayload({ count, babies: Array.from({ length: count }, () => ({ sex: null, name: '' })) });
     await supabase.from('prep_data').upsert(
       { user_id: user!.id, kind: 'pregnancy_details', payload, updated_at: new Date().toISOString() },
       { onConflict: 'user_id,kind' }
@@ -221,22 +223,22 @@ export default function Onboarding() {
             <Text style={styles.title}>How many babies?</Text>
             <Text style={styles.subtitle}>Expecting more than one? We{"'"}ll tailor your week-by-week journey for multiples.</Text>
             <View style={styles.choices}>
-              {[1, 2, 3].map((n) => {
-                const on = babyCount === n;
+              {([1, 2, 3, 'unsure'] as const).map((n) => {
+                const on = babyChoice === n;
                 return (
-                  <TouchableOpacity key={n} style={[styles.choice, on && styles.choiceOn]} onPress={() => setBabyCount(n)} activeOpacity={0.85}>
+                  <TouchableOpacity key={String(n)} style={[styles.choice, on && styles.choiceOn]} onPress={() => setBabyChoice(n)} activeOpacity={0.85}>
                     {on ? (
                       <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.choiceIcon}>
-                        <Text style={styles.countNum}>{n}</Text>
+                        <Text style={styles.countNum}>{n === 'unsure' ? '?' : n}</Text>
                       </LinearGradient>
                     ) : (
                       <View style={[styles.choiceIcon, styles.choiceIconOff]}>
-                        <Text style={[styles.countNum, { color: colors.accent }]}>{n}</Text>
+                        <Text style={[styles.countNum, { color: colors.accent }]}>{n === 'unsure' ? '?' : n}</Text>
                       </View>
                     )}
                     <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={styles.choiceTitle}>{countLabel(n)}</Text>
-                      <Text style={styles.choiceSub}>{n === 1 ? 'A single baby' : `${n} babies`}</Text>
+                      <Text style={styles.choiceTitle}>{n === 'unsure' ? 'Not sure yet' : countLabel(n)}</Text>
+                      <Text style={styles.choiceSub}>{n === 'unsure' ? 'You can set this later' : n === 1 ? 'A single baby' : `${n} babies`}</Text>
                     </View>
                     <View style={[styles.radio, on && styles.radioOn]}>
                       {on && <Icon name="check" size={13} color={colors.white} strokeWidth={3} />}

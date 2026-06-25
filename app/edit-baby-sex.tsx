@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Keyboard, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
@@ -27,6 +27,24 @@ export default function EditBabies() {
   const [existing, setExisting] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Keyboard-aware scrolling: on Android (edge-to-edge) the keyboard covers
+  // lower name fields, so we track its height (to pad the scroll) and scroll the
+  // focused baby's card into view.
+  const scrollRef = useRef<ScrollView>(null);
+  const cardY = useRef<number[]>([]);
+  const [kbHeight, setKbHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvt, (e) => setKbHeight(e.endCoordinates.height));
+    const hide = Keyboard.addListener(hideEvt, () => setKbHeight(0));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+
+  const scrollToCard = (i: number) =>
+    setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(0, (cardY.current[i] ?? 0) - 40), animated: true }), 50);
 
   useEffect(() => {
     (async () => {
@@ -70,7 +88,7 @@ export default function EditBabies() {
       <ScreenGlow />
       <TopBar title="Your babies" />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + kbHeight }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text style={styles.intro}>Expecting more than one? Set how many babies you{"'"}re expecting, then add each one{"'"}s gender and name. You can change this anytime.</Text>
 
         {loading ? (
@@ -90,7 +108,7 @@ export default function EditBabies() {
             </View>
 
             {babies.map((baby, i) => (
-              <View key={i} style={styles.babyCard}>
+              <View key={i} style={styles.babyCard} onLayout={(e) => { cardY.current[i] = e.nativeEvent.layout.y; }}>
                 {count > 1 && <Text style={styles.babyHead}>Baby {i + 1}</Text>}
                 <View style={styles.sexRow}>
                   {SEX_OPTIONS.map((o) => {
@@ -109,6 +127,7 @@ export default function EditBabies() {
                   placeholderTextColor={colors.faint}
                   value={baby.name}
                   onChangeText={(t) => setName(i, t)}
+                  onFocus={() => scrollToCard(i)}
                   autoCapitalize="words"
                 />
               </View>
