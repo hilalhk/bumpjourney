@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
@@ -25,11 +26,11 @@ export default function ResetPassword() {
 
   async function submit() {
     if (code.length < 6) {
-      Alert.alert('Enter the 6-digit code', 'Check your email for the code we just sent.');
+      showAlert({ title: 'Enter the 6-digit code', message: 'Check your email for the code we just sent.', tone: 'info' });
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Choose a password', 'Your new password must be at least 6 characters.');
+      showAlert({ title: 'Choose a password', message: 'Your new password must be at least 6 characters.', tone: 'info' });
       return;
     }
     setLoading(true);
@@ -37,28 +38,28 @@ export default function ResetPassword() {
     const { error: verifyErr } = await supabase.auth.verifyOtp({ email, token: code, type: 'recovery' });
     if (verifyErr) {
       setLoading(false);
-      Alert.alert('Incorrect or expired code', verifyErr.message);
+      showAlert({ title: 'Incorrect or expired code', message: verifyErr.message, tone: 'error' });
       return;
     }
     const { error: updateErr } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (updateErr) {
-      Alert.alert('Could not update password', updateErr.message);
+      showAlert({ title: 'Could not update password', message: updateErr.message, tone: 'error' });
       return;
     }
     // A session now exists; the root layout routes into the app automatically.
-    Alert.alert('Password updated', "You're signed in with your new password.");
+    showAlert({ title: 'Password updated', message: "You're signed in with your new password.", tone: 'success' });
   }
 
   async function resend() {
     if (cooldown > 0) return;
     const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) {
-      Alert.alert('Could not resend', error.message);
+      showAlert({ title: 'Could not resend', message: error.message, tone: 'error' });
       return;
     }
     setCooldown(30);
-    Alert.alert('Code sent', 'We sent a fresh code to your email.');
+    showAlert({ title: 'Code sent', message: 'We sent a fresh code to your email.', tone: 'success' });
   }
 
   return (

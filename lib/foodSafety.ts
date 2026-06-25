@@ -10,12 +10,12 @@ export type FoodItem = {
 
 export const FOODS: FoodItem[] = [
   // ───────────────────────── FRUITS ─────────────────────────
-  { name: 'Pineapple', verdict: 'safe', category: 'Fruits', reason: 'Safe in normal amounts. The myth that bromelain triggers labour isn\u2019t supported by evidence \u2014 the amount in the flesh is tiny, and most bromelain sits in the core, which you don\u2019t eat. A good source of vitamin C.', keywords: ['pineapple', 'ananas', 'bromelain'] },
-  { name: 'Ripe papaya', verdict: 'safe', category: 'Fruits', reason: 'Ripe (yellow-skinned) papaya is safe and nutritious \u2014 rich in vitamins A and C, folate and fibre. It can even help with digestion and morning sickness.', keywords: ['papaya', 'pawpaw', 'ripe papaya'] },
-  { name: 'Unripe papaya', verdict: 'avoid', category: 'Fruits', reason: 'Green or semi-ripe papaya contains latex (papain) that can act like labour hormones and may trigger uterine contractions. Avoid unripe; ripe yellow papaya is fine.', keywords: ['unripe papaya', 'green papaya', 'papain'] },
+  { name: 'Pineapple', verdict: 'safe', category: 'Fruits', reason: 'Safe in normal amounts. The myth that bromelain triggers labor isn\u2019t supported by evidence \u2014 the amount in the flesh is tiny, and most bromelain sits in the core, which you don\u2019t eat. A good source of vitamin C.', keywords: ['pineapple', 'ananas', 'bromelain'] },
+  { name: 'Ripe papaya', verdict: 'safe', category: 'Fruits', reason: 'Ripe (yellow-skinned) papaya is safe and nutritious \u2014 rich in vitamins A and C, folate and fiber. It can even help with digestion and morning sickness.', keywords: ['papaya', 'pawpaw', 'ripe papaya'] },
+  { name: 'Unripe papaya', verdict: 'avoid', category: 'Fruits', reason: 'Green or semi-ripe papaya contains latex (papain) that can act like labor hormones and may trigger uterine contractions. Avoid unripe; ripe yellow papaya is fine.', keywords: ['unripe papaya', 'green papaya', 'papain'] },
   { name: 'Grapes', verdict: 'safe', category: 'Fruits', reason: 'Safe to eat \u2014 the \u201cavoid grapes\u201d idea is a myth. Just wash them thoroughly first and eat in normal amounts.', keywords: ['grapes', 'grape'] },
   { name: 'Banana', verdict: 'safe', category: 'Fruits', reason: 'Safe and a great source of potassium and quick energy. Often helps settle nausea in early pregnancy.', keywords: ['banana', 'bananas'] },
-  { name: 'Apple', verdict: 'safe', category: 'Fruits', reason: 'Safe and nutritious \u2014 fibre and vitamin C. Wash the skin well before eating.', keywords: ['apple', 'apples'] },
+  { name: 'Apple', verdict: 'safe', category: 'Fruits', reason: 'Safe and nutritious \u2014 fiber and vitamin C. Wash the skin well before eating.', keywords: ['apple', 'apples'] },
   { name: 'Mango', verdict: 'safe', category: 'Fruits', reason: 'Safe and rich in vitamins A and C. Wash the skin before cutting.', keywords: ['mango', 'mangoes'] },
   { name: 'Strawberries', verdict: 'safe', category: 'Fruits', reason: 'Safe \u2014 wash thoroughly to remove any soil or residue. The same goes for other berries.', keywords: ['strawberries', 'strawberry', 'berries', 'blueberries', 'raspberries'] },
   { name: 'Watermelon', verdict: 'safe', category: 'Fruits', reason: 'Safe and hydrating. Eat it freshly cut rather than pre-cut fruit that\u2019s been sitting out.', keywords: ['watermelon', 'melon'] },
@@ -26,7 +26,7 @@ export const FOODS: FoodItem[] = [
 
   // ───────────────────────── VEGETABLES ─────────────────────────
   { name: 'Spinach', verdict: 'safe', category: 'Vegetables', reason: 'Safe and rich in folate and iron. Wash thoroughly to remove any soil before eating raw.', keywords: ['spinach', 'leafy greens', 'greens'] },
-  { name: 'Broccoli', verdict: 'safe', category: 'Vegetables', reason: 'Safe and packed with folate, fibre and vitamin C. Great cooked or raw (washed).', keywords: ['broccoli'] },
+  { name: 'Broccoli', verdict: 'safe', category: 'Vegetables', reason: 'Safe and packed with folate, fiber and vitamin C. Great cooked or raw (washed).', keywords: ['broccoli'] },
   { name: 'Carrots', verdict: 'safe', category: 'Vegetables', reason: 'Safe and rich in beta-carotene. Wash or peel before eating.', keywords: ['carrots', 'carrot'] },
   { name: 'Tomatoes', verdict: 'safe', category: 'Vegetables', reason: 'Safe \u2014 a good source of vitamin C and lycopene. Wash well before eating raw.', keywords: ['tomatoes', 'tomato'] },
   { name: 'Potatoes', verdict: 'safe', category: 'Vegetables', reason: 'Safe when cooked. Avoid green or sprouting potatoes, which contain higher levels of solanine.', keywords: ['potatoes', 'potato'] },
@@ -35,20 +35,20 @@ export const FOODS: FoodItem[] = [
   { name: 'Unwashed vegetables', verdict: 'caution', category: 'Vegetables', reason: 'Always wash raw produce well. Unwashed veg can carry toxoplasma, listeria or soil bacteria.', keywords: ['unwashed vegetables', 'unwashed veg', 'raw vegetables'] },
 
   // ───────────────────────── CHEESE & DAIRY ─────────────────────────
-  { name: 'Mozzarella', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe if made from pasteurised milk (most is) \u2014 fine cooked or fresh. Just check the label says pasteurised.', keywords: ['mozzarella', 'cheese'] },
-  { name: 'Cheddar', verdict: 'safe', category: 'Cheese & dairy', reason: 'A hard cheese \u2014 safe to eat, even if unpasteurised, because hard cheeses are low-risk for listeria.', keywords: ['cheddar', 'hard cheese', 'cheese'] },
+  { name: 'Mozzarella', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe if made from pasteurized milk (most is) \u2014 fine cooked or fresh. Just check the label says pasteurized.', keywords: ['mozzarella', 'cheese'] },
+  { name: 'Cheddar', verdict: 'safe', category: 'Cheese & dairy', reason: 'A hard cheese \u2014 safe to eat, even if unpasteurized, because hard cheeses are low-risk for listeria.', keywords: ['cheddar', 'hard cheese', 'cheese'] },
   { name: 'Parmesan', verdict: 'safe', category: 'Cheese & dairy', reason: 'A hard cheese \u2014 safe. Grate it over pasta freely.', keywords: ['parmesan', 'parmigiano', 'hard cheese', 'cheese'] },
-  { name: 'Feta', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe if made from pasteurised milk. Its salt and acidic brine also help keep bacteria down. Check the label.', keywords: ['feta', 'cheese'] },
-  { name: 'Halloumi', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe, especially grilled or fried until hot. Choose a pasteurised version.', keywords: ['halloumi', 'cheese'] },
-  { name: 'Paneer', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe when made from pasteurised milk and cooked, as it usually is in curries and dishes.', keywords: ['paneer', 'cheese'] },
-  { name: 'Cream cheese', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe \u2014 it\u2019s made from pasteurised milk (e.g. Philadelphia, all varieties). Fine on bagels or in baking.', keywords: ['cream cheese', 'philadelphia', 'cheese'] },
-  { name: 'Cottage cheese', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe and a good protein source. Made from pasteurised milk.', keywords: ['cottage cheese', 'cheese'] },
-  { name: 'Ricotta', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe when pasteurised. Keep it refrigerated and eat fresh.', keywords: ['ricotta', 'cheese'] },
-  { name: 'Brie & Camembert', verdict: 'caution', category: 'Cheese & dairy', reason: 'Soft mould-ripened cheeses \u2014 avoid unless cooked until steaming hot, which kills listeria. The white rind is the concern, even when pasteurised.', keywords: ['brie', 'camembert', 'soft cheese', 'cheese'] },
+  { name: 'Feta', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe if made from pasteurized milk. Its salt and acidic brine also help keep bacteria down. Check the label.', keywords: ['feta', 'cheese'] },
+  { name: 'Halloumi', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe, especially grilled or fried until hot. Choose a pasteurized version.', keywords: ['halloumi', 'cheese'] },
+  { name: 'Paneer', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe when made from pasteurized milk and cooked, as it usually is in curries and dishes.', keywords: ['paneer', 'cheese'] },
+  { name: 'Cream cheese', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe \u2014 it\u2019s made from pasteurized milk (e.g. Philadelphia, all varieties). Fine on bagels or in baking.', keywords: ['cream cheese', 'philadelphia', 'cheese'] },
+  { name: 'Cottage cheese', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe and a good protein source. Made from pasteurized milk.', keywords: ['cottage cheese', 'cheese'] },
+  { name: 'Ricotta', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe when pasteurized. Keep it refrigerated and eat fresh.', keywords: ['ricotta', 'cheese'] },
+  { name: 'Brie & Camembert', verdict: 'caution', category: 'Cheese & dairy', reason: 'Soft mold-ripened cheeses \u2014 avoid unless cooked until steaming hot, which kills listeria. The white rind is the concern, even when pasteurized.', keywords: ['brie', 'camembert', 'soft cheese', 'cheese'] },
   { name: 'Blue cheese', verdict: 'caution', category: 'Cheese & dairy', reason: 'Soft blue cheeses (gorgonzola, roquefort, danish blue) \u2014 avoid unless cooked until steaming hot.', keywords: ['blue cheese', 'gorgonzola', 'roquefort', 'stilton', 'cheese'] },
   { name: 'Soft goat cheese', verdict: 'caution', category: 'Cheese & dairy', reason: 'Soft goat\u2019s cheese with a white rind \u2014 avoid unless cooked. Hard goat\u2019s cheese is fine.', keywords: ['goat cheese', 'chevre', 'goats cheese', 'cheese'] },
-  { name: 'Unpasteurised milk', verdict: 'avoid', category: 'Cheese & dairy', reason: 'Raw/unpasteurised milk \u2014 and any cheese made from it \u2014 can carry listeria and other bacteria. Stick to pasteurised.', keywords: ['unpasteurised milk', 'raw milk', 'milk'] },
-  { name: 'Yogurt', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe \u2014 all varieties made from pasteurised milk, including live and probiotic. A great source of calcium.', keywords: ['yogurt', 'yoghurt', 'probiotic'] },
+  { name: 'Unpasteurized milk', verdict: 'avoid', category: 'Cheese & dairy', reason: 'Raw/unpasteurized milk \u2014 and any cheese made from it \u2014 can carry listeria and other bacteria. Stick to pasteurized.', keywords: ['unpasteurized milk', 'raw milk', 'milk'] },
+  { name: 'Yogurt', verdict: 'safe', category: 'Cheese & dairy', reason: 'Safe \u2014 all varieties made from pasteurized milk, including live and probiotic. A great source of calcium.', keywords: ['yogurt', 'yogurt', 'probiotic'] },
   { name: 'Soft serve ice cream', verdict: 'caution', category: 'Cheese & dairy', reason: 'Machine soft-serve can carry listeria if the machine isn\u2019t cleaned well. Packaged, shop-bought ice cream is safer.', keywords: ['soft serve', 'ice cream', 'soft-serve'] },
 
   // ───────────────────────── SEAFOOD ─────────────────────────
@@ -67,7 +67,7 @@ export const FOODS: FoodItem[] = [
   { name: 'P\u00e2t\u00e9', verdict: 'avoid', category: 'Meat & eggs', reason: 'Refrigerated p\u00e2t\u00e9 and meat spreads (including vegetable p\u00e2t\u00e9) can carry listeria. Canned/shelf-stable versions are okay.', keywords: ['pate', 'p\u00e2t\u00e9', 'meat spread'] },
   { name: 'Liver', verdict: 'avoid', category: 'Meat & eggs', reason: 'Very high in vitamin A, which can harm the baby in large amounts. Avoid liver and liver products like liver p\u00e2t\u00e9.', keywords: ['liver', 'liver pate', 'offal'] },
   { name: 'Cooked eggs', verdict: 'safe', category: 'Meat & eggs', reason: 'Safe when the yolk and white are firm. Aim for over-well or a firm scramble.', keywords: ['cooked eggs', 'egg', 'eggs'] },
-  { name: 'Runny / raw eggs', verdict: 'caution', category: 'Meat & eggs', reason: 'Soft/runny eggs and raw-egg foods (homemade mayo, raw cookie dough, Caesar dressing) can carry salmonella. Pasteurised or fully-cooked eggs are safe.', keywords: ['runny eggs', 'raw egg', 'soft eggs', 'cookie dough', 'mayonnaise', 'caesar'] },
+  { name: 'Runny / raw eggs', verdict: 'caution', category: 'Meat & eggs', reason: 'Soft/runny eggs and raw-egg foods (homemade mayo, raw cookie dough, Caesar dressing) can carry salmonella. Pasteurized or fully-cooked eggs are safe.', keywords: ['runny eggs', 'raw egg', 'soft eggs', 'cookie dough', 'mayonnaise', 'caesar'] },
   { name: 'Bacon', verdict: 'safe', category: 'Meat & eggs', reason: 'Safe when cooked thoroughly until crisp and hot.', keywords: ['bacon'] },
 
   // ───────────────────────── DRINKS ─────────────────────────
@@ -76,12 +76,12 @@ export const FOODS: FoodItem[] = [
   { name: 'Green tea', verdict: 'caution', category: 'Drinks', reason: 'Fine in moderation, but it counts toward your daily caffeine limit and very large amounts may affect folate absorption.', keywords: ['green tea', 'matcha'] },
   { name: 'Herbal tea', verdict: 'caution', category: 'Drinks', reason: 'Not all herbal teas are well studied in pregnancy. Stick to known-safe ones like ginger or peppermint in moderation, and check with your provider.', keywords: ['herbal tea', 'ginger tea', 'peppermint tea'] },
   { name: 'Alcohol', verdict: 'avoid', category: 'Drinks', reason: 'No amount is known to be safe in pregnancy. The advice is to avoid alcohol entirely.', keywords: ['alcohol', 'wine', 'beer', 'spirits', 'cocktail'] },
-  { name: 'Fresh juice', verdict: 'caution', category: 'Drinks', reason: 'Freshly-squeezed or unpasteurised juice (juice bars, farm stands) can carry bacteria. Pasteurised boxed/bottled juice is safe.', keywords: ['fresh juice', 'juice', 'unpasteurised juice'] },
+  { name: 'Fresh juice', verdict: 'caution', category: 'Drinks', reason: 'Freshly-squeezed or unpasteurized juice (juice bars, farm stands) can carry bacteria. Pasteurized boxed/bottled juice is safe.', keywords: ['fresh juice', 'juice', 'unpasteurized juice'] },
 
   // ───────────────────────── OTHER / CROSS-CUISINE ─────────────────────────
   { name: 'Hummus', verdict: 'safe', category: 'Other', reason: 'Safe \u2014 shop-bought is fine. If homemade, keep it refrigerated and eat it fresh.', keywords: ['hummus', 'houmous', 'chickpea dip'] },
-  { name: 'Curry', verdict: 'safe', category: 'Other', reason: 'Safe when freshly cooked and served hot. The usual rules apply to its ingredients \u2014 paneer pasteurised, meat cooked through.', keywords: ['curry', 'masala'] },
-  { name: 'Kimchi', verdict: 'caution', category: 'Other', reason: 'Fermented foods are generally fine if commercially made and refrigerated. Check it\u2019s from pasteurised production and eat it fresh.', keywords: ['kimchi', 'fermented', 'sauerkraut'] },
+  { name: 'Curry', verdict: 'safe', category: 'Other', reason: 'Safe when freshly cooked and served hot. The usual rules apply to its ingredients \u2014 paneer pasteurized, meat cooked through.', keywords: ['curry', 'masala'] },
+  { name: 'Kimchi', verdict: 'caution', category: 'Other', reason: 'Fermented foods are generally fine if commercially made and refrigerated. Check it\u2019s from pasteurized production and eat it fresh.', keywords: ['kimchi', 'fermented', 'sauerkraut'] },
   { name: 'Tofu', verdict: 'safe', category: 'Other', reason: 'Safe and a good source of protein and calcium.', keywords: ['tofu', 'soy', 'bean curd'] },
   { name: 'Honey', verdict: 'safe', category: 'Other', reason: 'Safe for you during pregnancy. (The infant-botulism warning only applies to babies under 12 months.)', keywords: ['honey'] },
   { name: 'Peanuts', verdict: 'safe', category: 'Other', reason: 'Safe unless you have a nut allergy \u2014 eating them doesn\u2019t raise your baby\u2019s allergy risk. A good source of protein.', keywords: ['peanuts', 'peanut', 'nuts', 'peanut butter'] },

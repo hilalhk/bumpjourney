@@ -1,12 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import {
-  Alert, KeyboardAvoidingView, Modal, Platform, ScrollView,
-  StyleSheet, Text, TextInput, TouchableOpacity, View,
-} from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
-import { useConfirm } from '../components/ConfirmDialog';
+import { showAlert, useConfirm } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
@@ -57,7 +54,7 @@ export default function Appointments() {
   }
 
   async function save() {
-    if (!title.trim()) { Alert.alert('Add a title', 'What is this appointment for?'); return; }
+    if (!title.trim()) { showAlert({ title: 'Add a title', message: 'What is this appointment for?', tone: 'info' }); return; }
     setSaving(true);
     let notifyId: string | null = null;
     const granted = await ensurePermission();
@@ -68,9 +65,9 @@ export default function Appointments() {
       location: location.trim() || null, notes: notes.trim() || null, notify_id: notifyId,
     });
     setSaving(false);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { showAlert({ title: 'Error', message: error.message, tone: 'error' }); return; }
     setShowForm(false);
-    Alert.alert('Saved', granted ? "We'll remind you 24 hours before." : 'Appointment saved. Enable notifications in settings to get reminders.');
+    showAlert({ title: 'Saved', message: granted ? "We'll remind you 24 hours before." : 'Appointment saved. Enable notifications in settings to get reminders.', tone: 'success' });
     load();
   }
 

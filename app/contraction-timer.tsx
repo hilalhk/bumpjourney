@@ -1,8 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
+import { showAlert } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
 import DateTimeModal from '../components/DateTimeModal';
 import ScreenGlow from '../components/ScreenGlow';
@@ -95,7 +96,7 @@ export default function ContractionTimer() {
       table: 'contraction_sessions',
       payload: { started_at: sessionStart.toISOString(), ended_at: new Date().toISOString(), contractions: finished },
     });
-    Alert.alert('Session saved', `${finished.length} contractions recorded.`);
+    showAlert({ title: 'Session saved', message: `${finished.length} contractions recorded.`, tone: 'success' });
     setSessionStart(null);
     setContractions([]);
     loadHistory();

@@ -5,7 +5,7 @@ import { Icon, IconName } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { FOODS, FOOD_CATEGORIES, FoodItem, Verdict, searchFood } from '../lib/foodSafety';
-import { colors, fonts } from '../lib/theme';
+import { colors, fonts, radius } from '../lib/theme';
 
 const VERDICT_META: Record<Verdict, { label: string; color: string; bg: string; icon: IconName }> = {
   safe: { label: 'Safe', color: '#3E8E62', bg: '#E7F3EC', icon: 'verdict-safe' },
@@ -16,6 +16,7 @@ const VERDICT_META: Record<Verdict, { label: string; color: string; bg: string; 
 export default function FoodSafety() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   let results: FoodItem[];
   if (query.trim()) results = searchFood(query);
@@ -25,7 +26,7 @@ export default function FoodSafety() {
   return (
     <View style={styles.container}>
       <ScreenGlow />
-      <TopBar title="Food Safety" />
+      <TopBar title="Food Safety" rightGlyph="help" onRightPress={() => setHelpOpen((h) => !h)} />
 
       <View style={styles.searchWrap}>
         <Icon name="search" size={17} color={colors.muted} />
@@ -60,6 +61,16 @@ export default function FoodSafety() {
         </ScrollView>
       )}
 
+      {helpOpen && (
+        <View style={styles.help}>
+          <View style={{ marginTop: 1 }}><Icon name="info" size={16} color={colors.accentDeep} /></View>
+          <Text style={styles.helpText}>
+            General guidance only, not medical advice. Recommendations vary by country and situation — always confirm
+            with your healthcare provider.
+          </Text>
+        </View>
+      )}
+
       <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 12, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         {results.length === 0 && (
           <View style={styles.emptyWrap}>
@@ -82,10 +93,6 @@ export default function FoodSafety() {
             </View>
           );
         })}
-        <Text style={styles.note}>
-          General guidance only, not medical advice. Recommendations vary by country and situation — always confirm
-          with your healthcare provider.
-        </Text>
       </ScrollView>
     </View>
   );
@@ -116,5 +123,6 @@ const styles = StyleSheet.create({
   emptyWrap: { alignItems: 'center', paddingVertical: 40, paddingHorizontal: 24 },
   emptyIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   empty: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 21, color: colors.muted, textAlign: 'center', marginTop: 16 },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 16, paddingHorizontal: 14 },
+  help: { flexDirection: 'row', gap: 9, backgroundColor: colors.accentSoft, borderRadius: radius.tile, paddingVertical: 13, paddingHorizontal: 15, marginHorizontal: 18, marginTop: 12 },
+  helpText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: colors.accentDeep },
 });

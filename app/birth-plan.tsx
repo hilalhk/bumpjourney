@@ -1,7 +1,8 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -17,7 +18,7 @@ function escapeHtml(s: string) {
 type Question = { id: string; question: string; options: string[] };
 
 const QUESTIONS: Question[] = [
-  { id: 'place', question: 'Where would you like to give birth?', options: ['Hospital', 'Birth centre', 'Home', 'Not sure yet'] },
+  { id: 'place', question: 'Where would you like to give birth?', options: ['Hospital', 'Birth center', 'Home', 'Not sure yet'] },
   { id: 'support', question: 'Who do you want with you?', options: ['Partner', 'Family member', 'Doula', 'Partner + doula'] },
   { id: 'pain', question: 'Pain relief preferences?', options: ['Open to all options', 'Prefer natural / minimal', 'Want an epidural', 'Decide on the day'] },
   { id: 'environment', question: 'Birth environment?', options: ['Dim lights & quiet', 'Music playing', 'No strong preference'] },
@@ -102,7 +103,7 @@ export default function BirthPlan() {
         await Print.printAsync({ uri });
       }
     } catch {
-      Alert.alert('Could not create PDF', 'Something went wrong generating your birth plan. Please try again.');
+      showAlert({ title: 'Could not create PDF', message: 'Something went wrong generating your birth plan. Please try again.', tone: 'error' });
     } finally {
       setDownloading(false);
     }

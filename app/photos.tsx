@@ -2,12 +2,9 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator, Alert, FlatList, Modal,
-  StyleSheet, Text, TextInput, TouchableOpacity, View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
-import { useConfirm } from '../components/ConfirmDialog';
+import { showAlert, useConfirm } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -65,7 +62,7 @@ export default function Photos() {
     setUploading(true);
     const { error } = await uploadPhoto(pendingAsset, kind, currentWeek, caption);
     setUploading(false);
-    if (error) { Alert.alert('Upload failed', error); return; }
+    if (error) { showAlert({ title: 'Upload failed', message: error, tone: 'error' }); return; }
     setPending(null); setPendingAsset(null); setCaption(''); setLoading(true); loadPhotos();
   }
 

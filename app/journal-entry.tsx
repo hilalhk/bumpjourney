@@ -1,9 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  Alert, KeyboardAvoidingView, Platform, ScrollView,
-  StyleSheet, Text, TextInput, TouchableOpacity, View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showAlert } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import { MOODS } from '../lib/journalPrompts';
@@ -34,7 +32,7 @@ export default function JournalEntry() {
   }
 
   async function save() {
-    if (!body.trim()) { Alert.alert('Nothing to save yet', 'Write a little something first.'); return; }
+    if (!body.trim()) { showAlert({ title: 'Nothing to save yet', message: 'Write a little something first.', tone: 'info' }); return; }
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = editing
@@ -44,7 +42,7 @@ export default function JournalEntry() {
           prompt: params.prompt ?? null, body: body.trim(), moods,
         });
     setSaving(false);
-    if (error) Alert.alert('Error', error.message);
+    if (error) showAlert({ title: 'Error', message: error.message, tone: 'error' });
     else router.back();
   }
 

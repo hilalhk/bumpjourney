@@ -1,13 +1,15 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
+import { showAlert } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
 import GradientButton from '../components/GradientButton';
 import { Icon, IconName } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import StackHeader from '../components/StackHeader';
+import { babiesPayload, countLabel } from '../lib/babies';
 import { dayKey } from '../lib/dates';
 import { DUE_METHODS, DueMethod, dueDateFromDate, dueDateFromTerm } from '../lib/pregnancy';
 import { supabase } from '../lib/supabase';
@@ -25,7 +27,7 @@ const METHOD_ICON: Record<DueMethod, IconName> = { due: 'calendar', lmp: 'water'
 function Dots({ step }: { step: number }) {
   return (
     <View style={styles.dots}>
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3].map((i) => (
         <View key={i} style={[styles.dot, i === step ? styles.dotOn : i < step ? styles.dotDone : undefined]} />
       ))}
     </View>
@@ -34,8 +36,9 @@ function Dots({ step }: { step: number }) {
 
 export default function Onboarding() {
   const router = useRouter();
-  const [step, setStep] = useState<'method' | 'date' | 'done'>('method');
+  const [step, setStep] = useState<'method' | 'date' | 'babies' | 'done'>('method');
   const [method, setMethod] = useState<DueMethod>('due');
+  const [babyCount, setBabyCount] = useState(1);
   const [date, setDate] = useState(new Date());
   const [weeks, setWeeks] = useState('');
   const [days, setDays] = useState('');
@@ -62,8 +65,14 @@ export default function Onboarding() {
     const { error } = await supabase.from('pregnancies').insert({
       user_id: user!.id, due_date: dayKey(dueDate), is_active: true,
     });
+    if (error) { setSaving(false); showAlert({ title: 'Error', message: error.message, tone: 'error' }); return; }
+    // Save how many babies; per-baby gender/name can be set later in Settings.
+    const payload = babiesPayload({ count: babyCount, babies: Array.from({ length: babyCount }, () => ({ sex: null, name: '' })) });
+    await supabase.from('prep_data').upsert(
+      { user_id: user!.id, kind: 'pregnancy_details', payload, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,kind' }
+    );
     setSaving(false);
-    if (error) { Alert.alert('Error', error.message); return; }
     setStep('done');
   }
 
@@ -73,14 +82,14 @@ export default function Onboarding() {
       <View style={styles.root}>
         <ScreenGlow intensity={0.24} />
         <View style={styles.doneWrap}>
-          <Dots step={2} />
+          <Dots step={3} />
           <View style={styles.doneCenter}>
             <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.celebrate}>
               <Icon name="check" size={56} color={colors.white} strokeWidth={2.4} />
             </LinearGradient>
             <Text style={styles.doneTitle}>{name ? `You're all set, ${name}` : "You're all set"}</Text>
             <Text style={styles.doneSub}>
-              Your journey is personalised to week {weeksAlong}. We{"'"}ll guide you with weekly updates, gentle
+              Your journey is personalized to week {weeksAlong}. We{"'"}ll guide you with weekly updates, gentle
               reminders, and tools for every step.
             </Text>
             <View style={styles.chipRow}>
@@ -98,15 +107,15 @@ export default function Onboarding() {
   return (
     <View style={styles.root}>
       <ScreenGlow intensity={0.18} />
-      {step === 'date' && <StackHeader onBack={() => setStep('method')} style={styles.header} />}
+      {(step === 'date' || step === 'babies') && <StackHeader onBack={() => setStep(step === 'babies' ? 'date' : 'method')} style={styles.header} />}
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Dots step={step === 'method' ? 0 : 1} />
+        <Dots step={step === 'method' ? 0 : step === 'date' ? 1 : 2} />
 
-        {step === 'method' ? (
+        {step === 'method' && (
           <>
             <Text style={styles.title}>{"Let's get started"}</Text>
             <Text style={styles.subtitle}>
-              To personalise your week-by-week journey, tell us how you{"'"}d like to set your due date.
+              To personalize your week-by-week journey, tell us how you{"'"}d like to set your due date.
             </Text>
             <View style={styles.choices}>
               {DUE_METHODS.map((m) => {
@@ -140,7 +149,9 @@ export default function Onboarding() {
             </View>
             <GradientButton label="Continue" onPress={() => setStep('date')} style={{ marginTop: 24 }} />
           </>
-        ) : (
+        )}
+
+        {step === 'date' && (
           <>
             <Text style={styles.title}>Your due date</Text>
             <Text style={styles.subtitle}>When is your baby expected? You can always adjust this later.</Text>
@@ -198,10 +209,44 @@ export default function Onboarding() {
               </>
             )}
 
-            <GradientButton label={saving ? 'Saving…' : 'Continue'} onPress={save} disabled={saving} style={{ marginTop: 22 }} />
+            <GradientButton label="Continue" onPress={() => setStep('babies')} style={{ marginTop: 22 }} />
             <TouchableOpacity onPress={() => setStep('method')} style={{ marginTop: 16 }}>
               <Text style={styles.altLink}>← Choose a different method</Text>
             </TouchableOpacity>
+          </>
+        )}
+
+        {step === 'babies' && (
+          <>
+            <Text style={styles.title}>How many babies?</Text>
+            <Text style={styles.subtitle}>Expecting more than one? We{"'"}ll tailor your week-by-week journey for multiples.</Text>
+            <View style={styles.choices}>
+              {[1, 2, 3].map((n) => {
+                const on = babyCount === n;
+                return (
+                  <TouchableOpacity key={n} style={[styles.choice, on && styles.choiceOn]} onPress={() => setBabyCount(n)} activeOpacity={0.85}>
+                    {on ? (
+                      <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.choiceIcon}>
+                        <Text style={styles.countNum}>{n}</Text>
+                      </LinearGradient>
+                    ) : (
+                      <View style={[styles.choiceIcon, styles.choiceIconOff]}>
+                        <Text style={[styles.countNum, { color: colors.accent }]}>{n}</Text>
+                      </View>
+                    )}
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={styles.choiceTitle}>{countLabel(n)}</Text>
+                      <Text style={styles.choiceSub}>{n === 1 ? 'A single baby' : `${n} babies`}</Text>
+                    </View>
+                    <View style={[styles.radio, on && styles.radioOn]}>
+                      {on && <Icon name="check" size={13} color={colors.white} strokeWidth={3} />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <Text style={styles.babyNote}>You can add each baby{"'"}s name and gender anytime in Settings.</Text>
+            <GradientButton label={saving ? 'Saving…' : 'Finish setup'} onPress={save} disabled={saving} style={{ marginTop: 22 }} />
           </>
         )}
       </ScrollView>
@@ -253,6 +298,8 @@ const styles = StyleSheet.create({
   termInput: { fontFamily: fonts.display, fontSize: 20, color: colors.ink, minWidth: 36 },
   termUnit: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted },
   altLink: { textAlign: 'center', fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
+  countNum: { fontFamily: fonts.display, fontSize: 20, color: colors.white },
+  babyNote: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 17, color: colors.muted, textAlign: 'center', marginTop: 16 },
 
   doneWrap: { flex: 1, padding: 26, paddingTop: 20, paddingBottom: 40 },
   doneCenter: { flex: 1, justifyContent: 'center', alignItems: 'center' },

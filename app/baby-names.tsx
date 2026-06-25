@@ -115,7 +115,7 @@ export default function BabyNames() {
           tab === 'favorites' ? (
             <View style={styles.emptyBox}>
               <View style={styles.emptyIcon}><Icon name="heart" size={26} color={colors.accent} /></View>
-              <Text style={styles.emptyText}>No favourites yet. Tap the heart on any name to add it to your shortlist.</Text>
+              <Text style={styles.emptyText}>No favorites yet. Tap the heart on any name to add it to your shortlist.</Text>
             </View>
           ) : (
             <Text style={styles.noMatch}>No names match. Try a different search or filter.</Text>

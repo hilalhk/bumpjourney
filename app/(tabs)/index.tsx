@@ -11,6 +11,7 @@ import ScreenGlow from '../../components/ScreenGlow';
 import SymptomTracker from '../../components/SymptomTracker';
 import TabHeader from '../../components/TabHeader';
 import TodayMeds from '../../components/TodayMeds';
+import { BabiesInfo, SEX_LABEL, readBabies } from '../../lib/babies';
 import { getBabySize } from '../../lib/babySizes';
 import { dayKey } from '../../lib/dates';
 import { getMilestones } from '../../lib/milestones';
@@ -62,6 +63,7 @@ export default function Home() {
   const [kicksToday, setKicksToday] = useState(0);
   const [water, setWater] = useState({ glasses: 0, goal: 8 });
   const [nextAppt, setNextAppt] = useState<{ date: string; title: string } | null>(null);
+  const [babiesInfo, setBabiesInfo] = useState<BabiesInfo>({ count: 1, babies: [{ sex: null, name: '' }] });
 
   // past-day review
   const [kickStats, setKickStats] = useState({ sessions: 0, kicks: 0, avgMin: 0 });
@@ -84,13 +86,15 @@ export default function Home() {
         setLoading(false);
 
         const today = dayKey(new Date());
-        const [{ data: kt }, { data: w }, { data: appt }] = await Promise.all([
+        const [{ data: kt }, { data: w }, { data: appt }, { data: details }] = await Promise.all([
           supabase.from('kick_sessions').select('kick_count')
             .gte('started_at', today + 'T00:00:00').lte('started_at', today + 'T23:59:59'),
           supabase.from('water_logs').select('glasses, goal').eq('log_date', today).maybeSingle(),
           supabase.from('appointments').select('appt_at, title')
             .gte('appt_at', new Date().toISOString()).order('appt_at', { ascending: true }).limit(1),
+          supabase.from('prep_data').select('payload').eq('kind', 'pregnancy_details').maybeSingle(),
         ]);
+        setBabiesInfo(readBabies(details?.payload));
         setKicksToday((kt ?? []).reduce((s, k) => s + (k.kick_count ?? 0), 0));
         if (w) setWater({ glasses: w.glasses ?? 0, goal: w.goal ?? 8 });
         if (appt && appt.length > 0) {
@@ -196,7 +200,7 @@ export default function Home() {
               <View style={styles.sizeCard}>
                 <View style={styles.sizeEmojiBox}><Text style={styles.sizeEmoji}>{size.emoji}</Text></View>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={styles.sizeLabel}>{"Baby's size"}</Text>
+                  <Text style={styles.sizeLabel}>{babiesInfo.count > 1 ? "Babies' size" : "Baby's size"}</Text>
                   <Text style={styles.sizeItem}>{capitalize(size.item)}</Text>
                   <Text style={styles.sizeMeta}>~{size.length} · {size.weight}</Text>
                 </View>
@@ -206,6 +210,21 @@ export default function Home() {
                 </View>
               </View>
             </View>
+
+            {babiesInfo.count > 1 && (
+              <View style={styles.babiesCard}>
+                <Text style={styles.babiesTitle}>Your babies</Text>
+                {babiesInfo.babies.map((b, i) => (
+                  <View key={i} style={[styles.babyRow, i > 0 && styles.babyRowBorder]}>
+                    <View style={styles.babyDot}>
+                      <Icon name={b.sex === 'boy' ? 'gender-boy' : b.sex === 'girl' ? 'gender-girl' : 'gift'} size={16} color={colors.accent} />
+                    </View>
+                    <Text style={styles.babyName} numberOfLines={1}>{b.name.trim() || `Baby ${i + 1}`}</Text>
+                    <Text style={styles.babySex}>{b.sex ? SEX_LABEL[b.sex] : 'Not set'}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
 
             {/* quick tools grid */}
             <View style={styles.grid}>
@@ -356,6 +375,14 @@ const styles = StyleSheet.create({
   dueBox: { alignItems: 'flex-end', paddingLeft: 10, marginLeft: 2, borderLeftWidth: 1, borderLeftColor: colors.cardBorder },
   dueLabel: { fontFamily: fonts.body6, fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: colors.muted },
   dueValue: { fontFamily: fonts.display, fontSize: 14, color: colors.ink, marginTop: 5 },
+
+  babiesCard: { ...cardStyle, padding: 14, paddingHorizontal: 16, marginTop: 16 },
+  babiesTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink, marginBottom: 2 },
+  babyRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+  babyRowBorder: { borderTopWidth: 1, borderTopColor: colors.cardBorder },
+  babyDot: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  babyName: { flex: 1, fontFamily: fonts.displaySemi, fontSize: 14, color: colors.ink },
+  babySex: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 26 },
   tile: { ...cardStyle, width: '47.8%', flexGrow: 1, padding: 15 },

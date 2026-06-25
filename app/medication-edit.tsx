@@ -1,17 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput, TouchableOpacity,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { dayKey, displayTime } from '../lib/dates';
-import { useConfirm } from '../components/ConfirmDialog';
+import { showAlert, useConfirm } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -83,8 +74,8 @@ export default function MedicationEdit() {
   function removeTime(i: number) { setTimes((prev) => prev.filter((_, idx) => idx !== i)); }
 
   async function save() {
-    if (!name.trim()) { Alert.alert('Add a name', 'What medication or supplement is this?'); return; }
-    if (times.length === 0) { Alert.alert('Add a time', 'Set at least one reminder time.'); return; }
+    if (!name.trim()) { showAlert({ title: 'Add a name', message: 'What medication or supplement is this?', tone: 'info' }); return; }
+    if (times.length === 0) { showAlert({ title: 'Add a time', message: 'Set at least one reminder time.', tone: 'info' }); return; }
     setSaving(true);
 
     // Cancel any existing reminders (editing) before scheduling fresh ones
@@ -109,7 +100,7 @@ export default function MedicationEdit() {
       ({ error } = await supabase.from('medications').insert(payload));
     }
     setSaving(false);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { showAlert({ title: 'Error', message: error.message, tone: 'error' }); return; }
     router.back();
   }
 

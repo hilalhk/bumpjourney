@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
+import { showAlert } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
 import DateTimeModal from '../components/DateTimeModal';
 import ScreenGlow from '../components/ScreenGlow';
@@ -78,7 +79,7 @@ export default function KickCounter() {
       table: 'kick_sessions',
       payload: { started_at: startedAt.toISOString(), ended_at: new Date().toISOString(), kick_count: count },
     });
-    Alert.alert(count >= 10 ? '10 kicks! 🎉' : 'Session saved', `${count} kicks in ${formatSeconds(elapsed)}.`);
+    showAlert({ title: count >= 10 ? '10 kicks! 🎉' : 'Session saved', message: `${count} kicks in ${formatSeconds(elapsed)}.`, tone: 'success' });
     setStartedAt(null); setKicks(0); setElapsed(0);
     loadHistory();
   }

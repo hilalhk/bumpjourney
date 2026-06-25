@@ -1,13 +1,14 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
-import { useConfirm } from '../components/ConfirmDialog';
+import { showAlert, useConfirm } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { usePregnancy, weekSubtitle } from '../hooks/usePregnancy';
+import { babiesSummary, readBabies } from '../lib/babies';
 import { supabase } from '../lib/supabase';
 import { colors, fonts, gradient, radius, shadow } from '../lib/theme';
 import { fullName } from '../lib/user';
@@ -21,7 +22,7 @@ export default function Settings() {
   const [nameDraft, setNameDraft] = useState('');
   const [savingName, setSavingName] = useState(false);
   const [dueDate, setDueDate] = useState<string | null>(null);
-  const [babySex, setBabySex] = useState<string | null>(null);
+  const [babiesText, setBabiesText] = useState('Not set');
 
   const loadDue = useCallback(async () => {
     const [{ data: preg }, { data: details }] = await Promise.all([
@@ -31,10 +32,8 @@ export default function Settings() {
     if (preg && preg.length > 0) {
       setDueDate(new Date(preg[0].due_date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
     }
-    setBabySex(details?.payload?.sex ?? null);
+    setBabiesText(babiesSummary(readBabies(details?.payload)));
   }, []);
-
-  const sexLabel = babySex === 'girl' ? 'Girl' : babySex === 'boy' ? 'Boy' : babySex === 'surprise' ? 'Team surprise' : 'Not set';
 
   useEffect(() => {
     (async () => {
@@ -56,7 +55,7 @@ export default function Settings() {
     setSavingName(true);
     const { data, error } = await supabase.auth.updateUser({ data: { full_name: trimmed } });
     setSavingName(false);
-    if (error) { Alert.alert("Couldn't save", error.message); return; }
+    if (error) { showAlert({ title: "Couldn't save", message: error.message, tone: 'error' }); return; }
     setName(fullName(data.user));
     setEditingName(false);
   }
@@ -88,7 +87,7 @@ export default function Settings() {
 
   async function doDelete() {
     const { error } = await supabase.rpc('delete_my_account');
-    if (error) { Alert.alert('Error', 'Could not delete your account: ' + error.message); return; }
+    if (error) { showAlert({ title: 'Error', message: 'Could not delete your account: ' + error.message, tone: 'error' }); return; }
     await supabase.auth.signOut();
   }
 
@@ -127,8 +126,8 @@ export default function Settings() {
           </TouchableOpacity>
           <TouchableOpacity style={[styles.linkRow, styles.rowBorder]} onPress={() => router.push('/edit-baby-sex')} activeOpacity={0.7}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowLabel}>Baby&apos;s sex</Text>
-              <Text style={styles.rowValue}>{sexLabel}</Text>
+              <Text style={styles.rowLabel}>Your babies</Text>
+              <Text style={styles.rowValue}>{babiesText}</Text>
             </View>
             <EditPill />
           </TouchableOpacity>

@@ -1,15 +1,9 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  Keyboard, Linking, Platform, ScrollView,
-  StyleSheet,
-  Text,
-  TextInput, TouchableOpacity,
-  View,
-} from 'react-native';
+import { Keyboard, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Path, Polyline, Rect } from 'react-native-svg';
+import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import ScreenGlow from '../components/ScreenGlow';
 import { signInWithGoogle } from '../lib/googleAuth';
@@ -75,7 +69,7 @@ export default function Login() {
     const { ok, error } = await signInWithGoogle();
     setGoogleLoading(false);
     // On success the root layout routes into the app via the new session.
-    if (!ok && error) Alert.alert('Google sign-in', error);
+    if (!ok && error) showAlert({ title: 'Google sign-in', message: error, tone: 'error' });
   }
 
   // The form scrolls; on Android (edge-to-edge) the window doesn't resize for the
@@ -99,18 +93,18 @@ export default function Login() {
 
   async function submit() {
     if (!email.trim() || !password) {
-      Alert.alert('Missing details', 'Please enter your email and password.');
+      showAlert({ title: 'Missing details', message: 'Please enter your email and password.', tone: 'info' });
       return;
     }
     if (mode === 'signup' && !name.trim()) {
-      Alert.alert('Add your name', 'Tell us your name so we can personalise your journey.');
+      showAlert({ title: 'Add your name', message: 'Tell us your name so we can personalize your journey.', tone: 'info' });
       return;
     }
     setLoading(true);
     if (mode === 'signin') {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       setLoading(false);
-      if (error) Alert.alert('Could not sign in', error.message);
+      if (error) showAlert({ title: 'Could not sign in', message: error.message, tone: 'error' });
     } else {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
@@ -118,11 +112,11 @@ export default function Login() {
         options: { data: { full_name: name.trim() } },
       });
       setLoading(false);
-      if (error) { Alert.alert('Could not sign up', error.message); return; }
+      if (error) { showAlert({ title: 'Could not sign up', message: error.message, tone: 'error' }); return; }
       // Supabase returns a user with no identities when the email already exists
       // (it hides this to prevent account enumeration) — steer them to sign in.
       if (data.user && data.user.identities && data.user.identities.length === 0) {
-        Alert.alert('Already registered', 'This email already has an account. Try signing in instead.');
+        showAlert({ title: 'Already registered', message: 'This email already has an account. Try signing in instead.', tone: 'info' });
         return;
       }
       // With email confirmation on, no session exists until the code is verified.
@@ -134,11 +128,11 @@ export default function Login() {
 
   async function forgotPassword() {
     if (!email.trim()) {
-      Alert.alert('Enter your email', 'Type your email above first, then tap "Forgot password?" again.');
+      showAlert({ title: 'Enter your email', message: 'Type your email above first, then tap "Forgot password?" again.', tone: 'info' });
       return;
     }
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-    if (error) { Alert.alert('Could not send code', error.message); return; }
+    if (error) { showAlert({ title: 'Could not send code', message: error.message, tone: 'error' }); return; }
     router.push({ pathname: '/reset-password', params: { email: email.trim() } });
   }
 

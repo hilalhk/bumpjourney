@@ -12,9 +12,9 @@ type Item = { id: string; label: string; checked: boolean; custom?: boolean };
 type Section = { title: string; items: Item[] };
 
 const DEFAULT_SECTIONS: Section[] = [
-  { title: 'For you (labour)', items: ['Birth plan & maternity notes', 'Comfortable nightie or t-shirt', 'Dressing gown & slippers', 'Lip balm', 'Hair ties', 'Snacks & drinks', 'Phone charger (long cable)'].map((label, i) => ({ id: `you-${i}`, label, checked: false })) },
+  { title: 'For you (labor)', items: ['Birth plan & maternity notes', 'Comfortable nightgown or t-shirt', 'Robe & slippers', 'Lip balm', 'Hair ties', 'Snacks & drinks', 'Phone charger (long cable)'].map((label, i) => ({ id: `you-${i}`, label, checked: false })) },
   { title: 'For you (after birth)', items: ['Maternity pads', 'Comfortable underwear', 'Nursing bras', 'Going-home outfit', 'Toiletries', 'Towel'].map((label, i) => ({ id: `after-${i}`, label, checked: false })) },
-  { title: 'For baby', items: ['Bodysuits / vests (newborn)', 'Sleepsuits', 'Hat, mittens & socks', 'Muslin cloths', 'Nappies (newborn size)', 'Cotton wool / wipes', 'Blanket', 'Going-home outfit', 'Car seat'].map((label, i) => ({ id: `baby-${i}`, label, checked: false })) },
+  { title: 'For baby', items: ['Bodysuits / onesies (newborn)', 'Footed pajamas', 'Hat, mittens & socks', 'Burp cloths', 'Diapers (newborn size)', 'Cotton balls / wipes', 'Blanket', 'Going-home outfit', 'Car seat'].map((label, i) => ({ id: `baby-${i}`, label, checked: false })) },
   { title: 'For your partner', items: ['Snacks & drinks', 'Change of clothes', 'Phone & charger', 'Cash / cards'].map((label, i) => ({ id: `partner-${i}`, label, checked: false })) },
 ];
 

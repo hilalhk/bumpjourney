@@ -317,7 +317,7 @@ export const NAMES: BabyName[] = [
   { name: 'Eira', gender: 'girl', meaning: 'Snow', origin: 'Welsh' },
   { name: 'Megan', gender: 'girl', meaning: 'Pearl', origin: 'Welsh' },
   { name: 'Bryn', gender: 'unisex', meaning: 'Hill', origin: 'Welsh' },
-  { name: 'Lloyd', gender: 'boy', meaning: 'Grey; sacred', origin: 'Welsh' },
+  { name: 'Lloyd', gender: 'boy', meaning: 'Gray; sacred', origin: 'Welsh' },
 
   // Gaelic
   { name: 'Brianna', gender: 'girl', meaning: 'Strong, virtuous, noble', origin: 'Gaelic' },

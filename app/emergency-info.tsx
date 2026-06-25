@@ -1,11 +1,9 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import {
-  Alert, KeyboardAvoidingView, Linking, Platform, ScrollView,
-  StyleSheet, Text, TextInput, TouchableOpacity, View,
-} from 'react-native';
+import { KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { cardStyle } from '../components/Card';
+import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import { Icon, IconName } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -61,7 +59,7 @@ export default function EmergencyInfo() {
       { onConflict: 'user_id' }
     );
     setSaving(false);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { showAlert({ title: 'Error', message: error.message, tone: 'error' }); return; }
     setHasData(true);
     setEditing(false);
   }

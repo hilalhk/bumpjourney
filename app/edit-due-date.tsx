@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showAlert } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
@@ -65,7 +66,7 @@ export default function EditDueDate() {
     setSaving(true);
     const { error } = await supabase.from('pregnancies').update({ due_date: dayKey(newDue) }).eq('id', pregnancyId);
     setSaving(false);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { showAlert({ title: 'Error', message: error.message, tone: 'error' }); return; }
     router.back();
   }
 
