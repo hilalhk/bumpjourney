@@ -11,8 +11,9 @@ import ScreenGlow from '../../components/ScreenGlow';
 import SymptomTracker from '../../components/SymptomTracker';
 import TabHeader from '../../components/TabHeader';
 import TodayMeds from '../../components/TodayMeds';
-import { BabiesInfo, SEX_LABEL, readBabies } from '../../lib/babies';
+import { BabiesInfo, countLabel, SEX_LABEL, readBabies } from '../../lib/babies';
 import { getBabySize } from '../../lib/babySizes';
+import { getMultiplesTip } from '../../lib/multiplesContent';
 import { dayKey } from '../../lib/dates';
 import { getMilestones } from '../../lib/milestones';
 import { supabase } from '../../lib/supabase';
@@ -168,7 +169,7 @@ export default function Home() {
   const trimester = todayInfo.week <= 13 ? 1 : todayInfo.week <= 27 ? 2 : 3;
   const progress = Math.min(1, Math.max(0, todayInfo.daysAlong / 280));
   const size = getBabySize(todayInfo.week);
-  const milestones = getMilestones(trimester);
+  const milestones = getMilestones(trimester, babiesInfo.count);
   const insight = getWeekContent(todayInfo.week);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -242,6 +243,16 @@ export default function Home() {
               </View>
               <Text style={styles.insightText}>{insight.babyDetail}</Text>
             </View>
+
+            {babiesInfo.count > 1 && (
+              <View style={[styles.insight, { marginTop: 12 }]}>
+                <View style={styles.insightHead}>
+                  <Icon name="heart" size={16} color={colors.accentDeep} />
+                  <Text style={styles.insightLabel}>Carrying {countLabel(babiesInfo.count).toLowerCase()}</Text>
+                </View>
+                <Text style={styles.insightText}>{getMultiplesTip(todayInfo.week)}</Text>
+              </View>
+            )}
 
             {/* milestones */}
             <Text style={styles.sectionTitle}>{"This week's milestones"}</Text>

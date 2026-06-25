@@ -18,6 +18,18 @@ const BY_TRIMESTER: Record<number, Milestone[]> = {
   ],
 };
 
-export function getMilestones(trimester: number): Milestone[] {
-  return BY_TRIMESTER[trimester] ?? BY_TRIMESTER[1];
+// An extra, multiples-specific milestone surfaced when carrying twins+.
+const MULTIPLES_BY_TRIMESTER: Record<number, Milestone> = {
+  1: { title: 'Confirming multiples', desc: 'An early scan checks how many babies and how they share a placenta.', icon: 'search' },
+  2: { title: 'Growth scans', desc: 'More frequent scans track each baby’s growth.', icon: 'pulse-outline' },
+  3: { title: 'Earlier arrival', desc: 'Multiples often come before 37 weeks — be ready ahead of time.', icon: 'checkmark-circle-outline' },
+};
+
+export function getMilestones(trimester: number, count = 1): Milestone[] {
+  const base = BY_TRIMESTER[trimester] ?? BY_TRIMESTER[1];
+  if (count > 1) {
+    const extra = MULTIPLES_BY_TRIMESTER[trimester] ?? MULTIPLES_BY_TRIMESTER[1];
+    return [extra, ...base];
+  }
+  return base;
 }
