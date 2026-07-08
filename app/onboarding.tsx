@@ -2,7 +2,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { makeCardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
 import GradientButton from '../components/GradientButton';
@@ -11,9 +12,10 @@ import ScreenGlow from '../components/ScreenGlow';
 import StackHeader from '../components/StackHeader';
 import { babiesPayload, countLabel } from '../lib/babies';
 import { dayKey } from '../lib/dates';
-import { DUE_METHODS, DueMethod, dueDateFromDate, dueDateFromTerm } from '../lib/pregnancy';
+import { DUE_METHODS, DueMethod, dueDateFromDate, dueDateFromTerm, progressFor } from '../lib/pregnancy';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 import { firstName } from '../lib/user';
 
 const DATE_LABEL: Record<string, string> = {
@@ -25,6 +27,7 @@ const DATE_LABEL: Record<string, string> = {
 const METHOD_ICON: Record<DueMethod, IconName> = { due: 'calendar', lmp: 'water', conception: 'heart', term: 'clock' };
 
 function Dots({ step }: { step: number }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.dots}>
       {[0, 1, 2, 3].map((i) => (
@@ -35,6 +38,9 @@ function Dots({ step }: { step: number }) {
 }
 
 export default function Onboarding() {
+  const { colors, gradient } = useTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [step, setStep] = useState<'method' | 'date' | 'babies' | 'done'>('method');
   const [method, setMethod] = useState<DueMethod>('due');
@@ -53,9 +59,7 @@ export default function Onboarding() {
   }
 
   const previewDue = computeDue();
-  const daysToGo = Math.max(0, Math.round((previewDue.getTime() - Date.now()) / 86400000));
-  const weeksAlong = Math.max(0, Math.floor((280 - daysToGo) / 7));
-  const trimester = weeksAlong <= 13 ? 1 : weeksAlong <= 27 ? 2 : 3;
+  const { daysToGo, week: weeksAlong, trimester } = progressFor(previewDue);
 
   async function save() {
     setSaving(true);
@@ -83,11 +87,11 @@ export default function Onboarding() {
     return (
       <View style={styles.root}>
         <ScreenGlow intensity={0.24} />
-        <View style={styles.doneWrap}>
+        <View style={[styles.doneWrap, { paddingTop: 20 + insets.top, paddingBottom: 40 + insets.bottom }]}>
           <Dots step={3} />
           <View style={styles.doneCenter}>
             <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.celebrate}>
-              <Icon name="check" size={56} color={colors.white} strokeWidth={2.4} />
+              <Icon name="check" size={56} color={colors.onAccent} strokeWidth={2.4} />
             </LinearGradient>
             <Text style={styles.doneTitle}>{name ? `You're all set, ${name}` : "You're all set"}</Text>
             <Text style={styles.doneSub}>
@@ -110,7 +114,16 @@ export default function Onboarding() {
     <View style={styles.root}>
       <ScreenGlow intensity={0.18} />
       {(step === 'date' || step === 'babies') && <StackHeader onBack={() => setStep(step === 'babies' ? 'date' : 'method')} style={styles.header} />}
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      {/* The header supplies the status-bar inset when it renders; on the
+          'method' step there is no header, so the scroll must supply it. */}
+      <ScrollView
+        contentContainerStyle={[
+          styles.scroll,
+          { paddingTop: 20 + (step === 'method' ? insets.top : 0), paddingBottom: 40 + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <Dots step={step === 'method' ? 0 : step === 'date' ? 1 : 2} />
 
         {step === 'method' && (
@@ -131,7 +144,7 @@ export default function Onboarding() {
                   >
                     {on ? (
                       <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.choiceIcon}>
-                        <Icon name={METHOD_ICON[m.key]} size={22} color={colors.white} />
+                        <Icon name={METHOD_ICON[m.key]} size={22} color={colors.onAccent} />
                       </LinearGradient>
                     ) : (
                       <View style={[styles.choiceIcon, styles.choiceIconOff]}>
@@ -143,7 +156,7 @@ export default function Onboarding() {
                       <Text style={styles.choiceSub}>{m.sub}</Text>
                     </View>
                     <View style={[styles.radio, on && styles.radioOn]}>
-                      {on && <Icon name="check" size={13} color={colors.white} strokeWidth={3} />}
+                      {on && <Icon name="check" size={13} color={colors.onAccent} strokeWidth={3} />}
                     </View>
                   </TouchableOpacity>
                 );
@@ -241,7 +254,7 @@ export default function Onboarding() {
                       <Text style={styles.choiceSub}>{n === 'unsure' ? 'You can set this later' : n === 1 ? 'A single baby' : `${n} babies`}</Text>
                     </View>
                     <View style={[styles.radio, on && styles.radioOn]}>
-                      {on && <Icon name="check" size={13} color={colors.white} strokeWidth={3} />}
+                      {on && <Icon name="check" size={13} color={colors.onAccent} strokeWidth={3} />}
                     </View>
                   </TouchableOpacity>
                 );
@@ -257,6 +270,7 @@ export default function Onboarding() {
 }
 
 function SummaryChip({ v, k }: { v: string; k: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.summaryChip}>
       <Text style={styles.summaryV}>{v}</Text>
@@ -265,51 +279,51 @@ function SummaryChip({ v, k }: { v: string; k: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvas },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.canvas },
   header: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 4 },
   scroll: { padding: 24, paddingTop: 20, paddingBottom: 40 },
   dots: { flexDirection: 'row', gap: 6, marginBottom: 26 },
-  dot: { width: 10, height: 5, borderRadius: 100, backgroundColor: '#EAD9E0' },
-  dotOn: { width: 26, backgroundColor: colors.accent },
-  dotDone: { backgroundColor: colors.accent },
+  dot: { width: 10, height: 5, borderRadius: 100, backgroundColor: c.outline },
+  dotOn: { width: 26, backgroundColor: c.accent },
+  dotDone: { backgroundColor: c.accent },
 
-  title: { fontFamily: fonts.display, fontSize: 28, color: colors.ink },
-  subtitle: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 20, color: colors.muted, marginTop: 10, maxWidth: 300 },
+  title: { fontFamily: fonts.display, fontSize: 28, color: c.ink },
+  subtitle: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 20, color: c.muted, marginTop: 10, maxWidth: 300 },
 
   choices: { gap: 11, marginTop: 26 },
-  choice: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 13, padding: 15 },
-  choiceOn: { borderWidth: 2, borderColor: colors.accent },
+  choice: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 13, padding: 15 },
+  choiceOn: { borderWidth: 2, borderColor: c.accent },
   choiceIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  choiceIconOff: { backgroundColor: colors.accentSoft },
-  choiceTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink },
-  choiceSub: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginTop: 3 },
-  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#E0CDD6', alignItems: 'center', justifyContent: 'center' },
-  radioOn: { borderWidth: 0, backgroundColor: colors.accent },
+  choiceIconOff: { backgroundColor: c.accentSoft },
+  choiceTitle: { fontFamily: fonts.display, fontSize: 15, color: c.ink },
+  choiceSub: { fontFamily: fonts.body5, fontSize: 12, color: c.muted, marginTop: 3 },
+  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: c.outline, alignItems: 'center', justifyContent: 'center' },
+  radioOn: { borderWidth: 0, backgroundColor: c.accentFill },
 
-  dueDisplay: { borderRadius: radius.tile, padding: 22, marginTop: 24, alignItems: 'center', ...{ shadowColor: colors.accent, shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.26, shadowRadius: 30, elevation: 6 } },
+  dueDisplay: { borderRadius: radius.tile, padding: 22, marginTop: 24, alignItems: 'center', ...{ shadowColor: c.accent, shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.26, shadowRadius: 30, elevation: 6 } },
   dueDisplayLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.82)' },
-  dueDisplayDate: { fontFamily: fonts.display, fontSize: 30, color: colors.white, marginTop: 10 },
+  dueDisplayDate: { fontFamily: fonts.display, fontSize: 30, color: c.onAccent, marginTop: 10 },
   dueDisplayMeta: { fontFamily: fonts.body5, fontSize: 12, color: 'rgba(255,255,255,0.88)', marginTop: 8 },
 
-  fieldLabel: { fontFamily: fonts.display, fontSize: 16, color: colors.ink, marginTop: 22, marginBottom: 12 },
-  dateBtn: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16 },
-  dateText: { fontFamily: fonts.body5, fontSize: 15, color: colors.ink },
+  fieldLabel: { fontFamily: fonts.display, fontSize: 16, color: c.ink, marginTop: 22, marginBottom: 12 },
+  dateBtn: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16 },
+  dateText: { fontFamily: fonts.body5, fontSize: 15, color: c.ink },
   termRow: { flexDirection: 'row', gap: 12 },
-  termField: { ...cardStyle, flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 14 },
-  termInput: { fontFamily: fonts.display, fontSize: 20, color: colors.ink, minWidth: 36 },
-  termUnit: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted },
-  altLink: { textAlign: 'center', fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
-  countNum: { fontFamily: fonts.display, fontSize: 20, color: colors.white },
-  babyNote: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 17, color: colors.muted, textAlign: 'center', marginTop: 16 },
+  termField: { ...makeCardStyle(c), flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 14 },
+  termInput: { fontFamily: fonts.display, fontSize: 20, color: c.ink, minWidth: 36 },
+  termUnit: { fontFamily: fonts.body5, fontSize: 14, color: c.muted },
+  altLink: { textAlign: 'center', fontFamily: fonts.body5, fontSize: 13, color: c.muted },
+  countNum: { fontFamily: fonts.display, fontSize: 20, color: c.onAccent },
+  babyNote: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 17, color: c.muted, textAlign: 'center', marginTop: 16 },
 
   doneWrap: { flex: 1, padding: 26, paddingTop: 20, paddingBottom: 40 },
   doneCenter: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  celebrate: { width: 130, height: 130, borderRadius: 65, alignItems: 'center', justifyContent: 'center', ...{ shadowColor: colors.accent, shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.34, shadowRadius: 40, elevation: 8 } },
-  doneTitle: { fontFamily: fonts.display, fontSize: 28, color: colors.ink, marginTop: 28, textAlign: 'center' },
-  doneSub: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 21, color: colors.muted, marginTop: 12, textAlign: 'center', maxWidth: 280 },
+  celebrate: { width: 130, height: 130, borderRadius: 65, alignItems: 'center', justifyContent: 'center', ...{ shadowColor: c.accent, shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.34, shadowRadius: 40, elevation: 8 } },
+  doneTitle: { fontFamily: fonts.display, fontSize: 28, color: c.ink, marginTop: 28, textAlign: 'center' },
+  doneSub: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 21, color: c.muted, marginTop: 12, textAlign: 'center', maxWidth: 280 },
   chipRow: { flexDirection: 'row', gap: 10, marginTop: 26 },
-  summaryChip: { ...cardStyle, paddingVertical: 14, paddingHorizontal: 18, alignItems: 'center' },
-  summaryV: { fontFamily: fonts.display, fontSize: 22, color: colors.accentDeep },
-  summaryK: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.muted, marginTop: 6 },
+  summaryChip: { ...makeCardStyle(c), paddingVertical: 14, paddingHorizontal: 18, alignItems: 'center' },
+  summaryV: { fontFamily: fonts.display, fontSize: 22, color: c.accentDeep },
+  summaryK: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: c.muted, marginTop: 6 },
 });

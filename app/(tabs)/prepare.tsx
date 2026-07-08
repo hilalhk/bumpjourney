@@ -1,12 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../../components/Card';
+import { makeCardStyle } from '../../components/Card';
 import { Icon, IconName } from '../../components/Icons';
 import ScreenGlow from '../../components/ScreenGlow';
 import TabHeader from '../../components/TabHeader';
 import { usePregnancy, weekSubtitle } from '../../hooks/usePregnancy';
-import { colors, fonts, gradient, radius, shadow } from '../../lib/theme';
+import { useTheme, useThemedStyles } from '../../lib/ThemeContext';
+import { Colors, fonts, radius } from '../../lib/theme';
 
 const TOOLS: { route: string; icon: IconName; title: string; sub: string }[] = [
   { route: '/baby-names', icon: 'heart', title: 'Baby names', sub: 'Browse & build your shortlist' },
@@ -15,6 +16,8 @@ const TOOLS: { route: string; icon: IconName; title: string; sub: string }[] = [
 ];
 
 export default function Prepare() {
+  const { colors, gradient, shadow } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const info = usePregnancy();
   const dueLabel = info ? info.dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : null;
@@ -41,7 +44,7 @@ export default function Prepare() {
         {TOOLS.map((t) => (
           <TouchableOpacity key={t.route} style={styles.row} activeOpacity={0.85} onPress={() => router.push(t.route as any)}>
             <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.rowIcon}>
-              <Icon name={t.icon} size={22} color={colors.white} />
+              <Icon name={t.icon} size={22} color={colors.onAccent} />
             </LinearGradient>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.rowTitle}>{t.title}</Text>
@@ -62,24 +65,24 @@ export default function Prepare() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvas },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.canvas },
   scroll: { padding: 20, paddingTop: 14, paddingBottom: 140 },
-  title: { fontFamily: fonts.display, fontSize: 30, color: colors.ink, marginTop: 26 },
-  subtitle: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted, marginTop: 6 },
+  title: { fontFamily: fonts.display, fontSize: 30, color: c.ink, marginTop: 26 },
+  subtitle: { fontFamily: fonts.body5, fontSize: 13, color: c.muted, marginTop: 6 },
 
   banner: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: radius.tile, padding: 16, marginTop: 18 },
   bannerBadge: { width: 50, height: 50, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  bannerBadgeNum: { fontFamily: fonts.display, fontSize: 19, color: colors.white },
-  bannerTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.white },
+  bannerBadgeNum: { fontFamily: fonts.display, fontSize: 19, color: c.onAccent },
+  bannerTitle: { fontFamily: fonts.display, fontSize: 16, color: c.onAccent },
   bannerSub: { fontFamily: fonts.body5, fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
 
-  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: colors.muted, marginTop: 24, marginBottom: 12, marginHorizontal: 2 },
-  row: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 13, padding: 15, marginBottom: 10 },
+  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: c.muted, marginTop: 24, marginBottom: 12, marginHorizontal: 2 },
+  row: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 13, padding: 15, marginBottom: 10 },
   rowIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  rowTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink },
-  rowSub: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginTop: 3 },
+  rowTitle: { fontFamily: fonts.display, fontSize: 15, color: c.ink },
+  rowSub: { fontFamily: fonts.body5, fontSize: 12, color: c.muted, marginTop: 3 },
 
-  tip: { flexDirection: 'row', gap: 10, backgroundColor: colors.accentSoft, borderRadius: radius.tile, padding: 14, marginTop: 14 },
-  tipText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: colors.accentDeep },
+  tip: { flexDirection: 'row', gap: 10, backgroundColor: c.accentSoft, borderRadius: radius.tile, padding: 14, marginTop: 14 },
+  tipText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: c.accentDeep },
 });

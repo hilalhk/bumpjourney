@@ -3,7 +3,8 @@ import { Tabs } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HealthIcon, HomeIcon, JournalIcon, PrepareIcon } from '../../components/Icons';
-import { colors, fonts, gradient, radius, shadow } from '../../lib/theme';
+import { useTheme, useThemedStyles } from '../../lib/ThemeContext';
+import { Colors, fonts, radius, shadowFor } from '../../lib/theme';
 
 const TABS = [
   { name: 'index', label: 'Home', Icon: HomeIcon },
@@ -14,6 +15,8 @@ const TABS = [
 
 function LumiDock({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const { colors, gradient } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 16) }]} pointerEvents="box-none">
       <View style={styles.dock}>
@@ -39,7 +42,7 @@ function LumiDock({ state, navigation }: any) {
                   end={{ x: 1, y: 1 }}
                   style={styles.tabActive}
                 >
-                  <Icon size={22} color={colors.white} />
+                  <Icon size={22} color={colors.onAccent} />
                   <Text style={[styles.label, styles.labelActive]}>{tab.label}</Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -68,21 +71,21 @@ export default function TabsLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Colors) => StyleSheet.create({
   wrap: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16 },
   dock: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: 'rgba(255,255,255,0.92)',
+    backgroundColor: c.dock,
     borderRadius: radius.dock,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: c.cardBorder,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    shadowColor: '#3A1626',
+    shadowColor: c.scheme === 'light' ? '#3A1626' : '#000000',
     shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.12,
+    shadowOpacity: c.scheme === 'light' ? 0.12 : 0.5,
     shadowRadius: 34,
     elevation: 10,
   },
@@ -95,8 +98,8 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingVertical: 9,
     borderRadius: radius.dock,
-    ...shadow.accent,
+    ...shadowFor(c.scheme).accent,
   },
-  label: { fontFamily: fonts.body5, fontSize: 10, color: colors.body },
-  labelActive: { fontFamily: fonts.body6, color: colors.white },
+  label: { fontFamily: fonts.body5, fontSize: 10, color: c.body },
+  labelActive: { fontFamily: fonts.body6, color: c.onAccent },
 });

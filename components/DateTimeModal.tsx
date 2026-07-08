@@ -1,7 +1,9 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useEffect, useState } from 'react';
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fonts, radius } from '../lib/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 type Props = {
   visible: boolean;
@@ -26,6 +28,9 @@ type Props = {
 export default function DateTimeModal({
   visible, value, mode = 'date', minimumDate, maximumDate, onConfirm, onCancel,
 }: Props) {
+  const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useThemedStyles(makeStyles);
   const [temp, setTemp] = useState(value);
 
   // Re-seed the working value each time the picker is opened.
@@ -51,9 +56,9 @@ export default function DateTimeModal({
   }
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent onRequestClose={onCancel}>
       <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onCancel}>
-        <TouchableOpacity activeOpacity={1} style={styles.sheet}>
+        <TouchableOpacity activeOpacity={1} style={[styles.sheet, { paddingBottom: 24 + insets.bottom }]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={onCancel} hitSlop={8}>
               <Text style={styles.cancel}>Cancel</Text>
@@ -79,19 +84,19 @@ export default function DateTimeModal({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  backdrop: { flex: 1, backgroundColor: c.scrim, justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: colors.white,
+    backgroundColor: c.surface,
     borderTopLeftRadius: radius.card, borderTopRightRadius: radius.card,
     paddingBottom: 24,
   },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1, borderBottomColor: c.cardBorder,
   },
-  cancel: { fontSize: 16, color: colors.muted, fontFamily: fonts.body5 },
-  done: { fontSize: 16, color: colors.accentDeep, fontFamily: fonts.displaySemi },
+  cancel: { fontSize: 16, color: c.muted, fontFamily: fonts.body5 },
+  done: { fontSize: 16, color: c.accentDeep, fontFamily: fonts.displaySemi },
   picker: { alignSelf: 'stretch', height: 216 },
 });

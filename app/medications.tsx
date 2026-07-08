@@ -2,13 +2,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { displayTime, todayStr } from '../lib/dates';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient, shadow } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts } from '../lib/theme';
 
 type Med = {
   id: string; name: string; dosage: string | null; frequency: string;
@@ -17,6 +18,8 @@ type Med = {
 type MedView = Med & { todayTimes: string[]; takenCount: number; allTaken: boolean };
 
 export default function Medications() {
+  const { colors, gradient, shadow } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [meds, setMeds] = useState<MedView[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +68,7 @@ export default function Medications() {
         right={
           <TouchableOpacity onPress={() => router.push('/medication-edit')} activeOpacity={0.85} style={shadow.accent}>
             <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.addBtn}>
-              <Icon name="plus" size={20} color={colors.white} strokeWidth={2.4} />
+              <Icon name="plus" size={20} color={colors.onAccent} strokeWidth={2.4} />
             </LinearGradient>
           </TouchableOpacity>
         }
@@ -124,29 +127,29 @@ export default function Medications() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
   addBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   emptyBox: { alignItems: 'center', marginTop: 48, gap: 16 },
-  emptyIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  empty: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 20, color: colors.muted, textAlign: 'center', paddingHorizontal: 24 },
+  emptyIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  empty: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 20, color: c.muted, textAlign: 'center', paddingHorizontal: 24 },
 
-  progressCard: { ...cardStyle, padding: 16 },
+  progressCard: { ...makeCardStyle(c), padding: 16 },
   progressTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  progressTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink },
-  progressCount: { fontFamily: fonts.body6, fontSize: 12, color: colors.accentDeep },
-  track: { height: 8, borderRadius: 100, backgroundColor: colors.cardBorder, marginTop: 12, overflow: 'hidden' },
+  progressTitle: { fontFamily: fonts.display, fontSize: 15, color: c.ink },
+  progressCount: { fontFamily: fonts.body6, fontSize: 12, color: c.accentDeep },
+  track: { height: 8, borderRadius: 100, backgroundColor: c.cardBorder, marginTop: 12, overflow: 'hidden' },
   fill: { height: 8, borderRadius: 100 },
   nextRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 12 },
-  nextText: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted },
+  nextText: { fontFamily: fonts.body5, fontSize: 12, color: c.muted },
 
-  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: colors.muted, marginTop: 22, marginBottom: 12, marginHorizontal: 2 },
-  card: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 13, padding: 14, marginBottom: 10 },
-  iconBox: { width: 44, height: 44, borderRadius: 13, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  medName: { fontFamily: fonts.display, fontSize: 15, color: colors.ink },
-  medMeta: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginTop: 4 },
-  takenPill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: colors.accentSoft, borderRadius: 100, paddingVertical: 6, paddingHorizontal: 10 },
-  takenText: { fontFamily: fonts.body6, fontSize: 10, color: colors.accentDeep },
-  dueRadio: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#E3D2DA' },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 16 },
+  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: c.muted, marginTop: 22, marginBottom: 12, marginHorizontal: 2 },
+  card: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 13, padding: 14, marginBottom: 10 },
+  iconBox: { width: 44, height: 44, borderRadius: 13, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  medName: { fontFamily: fonts.display, fontSize: 15, color: c.ink },
+  medMeta: { fontFamily: fonts.body5, fontSize: 12, color: c.muted, marginTop: 4 },
+  takenPill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: c.accentSoft, borderRadius: 100, paddingVertical: 6, paddingHorizontal: 10 },
+  takenText: { fontFamily: fonts.body6, fontSize: 10, color: c.accentDeep },
+  dueRadio: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: c.outline },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint, textAlign: 'center', marginTop: 16 },
 });

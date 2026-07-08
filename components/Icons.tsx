@@ -2,7 +2,7 @@
 // Data-driven so every screen renders pixel-identical glyphs.
 import { ReactElement } from 'react';
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from 'react-native-svg';
-import { colors } from '../lib/theme';
+import { useTheme } from '../lib/ThemeContext';
 
 // Element tuples: p=path, c=circle, l=line, pl=polyline, pg=polygon, r=rect, e=ellipse, pr=rotated-rect
 type El =
@@ -102,10 +102,14 @@ const G: Record<IconName, El[]> = {
 
 type Props = { name: IconName; size?: number; color?: string; strokeWidth?: number; fill?: boolean };
 
-export function Icon({ name, size = 22, color = colors.ink, strokeWidth = 2, fill = false }: Props) {
+export function Icon({ name, size = 22, color, strokeWidth = 2, fill = false }: Props) {
+  // The default has to resolve at render, not in the parameter list, so it can
+  // follow the active scheme.
+  const { colors } = useTheme();
+  const stroke = color ?? colors.ink;
   const els = G[name] ?? [];
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill={fill ? color : 'none'} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill={fill ? stroke : 'none'} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
       {els.map((el, i) => {
         switch (el[0]) {
           case 'p': return <Path key={i} d={el[1]} />;

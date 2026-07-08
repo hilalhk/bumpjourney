@@ -2,13 +2,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { Icon, IconName } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { displayTime, todayStr } from '../lib/dates';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts } from '../lib/theme';
 
 type Appt = { id: string; title: string; appt_at: string; location: string | null };
 type RawMed = { id: string; name: string; dosage: string | null; times: string[]; start_date: string };
@@ -19,7 +20,31 @@ function fmtDateTime(iso: string) {
   return `${d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} · ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
 
+type CardProps = { icon: IconName; title: string; when: string; note?: string | null; onPress: () => void };
+
+// Module scope: a component declared inside another is a new type each render,
+// so React remounts the whole subtree instead of updating it.
+function Card({ icon, title, when, note, onPress }: CardProps) {
+  const { colors, gradient } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={onPress}>
+      <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
+        <Icon name={icon} size={20} color={colors.onAccent} strokeWidth={icon === 'pill' ? 1.8 : 2} />
+      </LinearGradient>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={styles.cardTitle}>{title}</Text>
+        <Text style={styles.cardWhen}>{when}</Text>
+        {note ? <Text style={styles.cardNote}>{note}</Text> : null}
+      </View>
+      <Icon name="chevron-right" size={18} color={colors.accentDeep} strokeWidth={2.2} />
+    </TouchableOpacity>
+  );
+}
+
 export default function Notifications() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [appts, setAppts] = useState<Appt[]>([]);
   const [meds, setMeds] = useState<Med[]>([]);
@@ -46,22 +71,6 @@ export default function Notifications() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const isEmpty = !loading && appts.length === 0 && meds.length === 0;
-
-  function Card({ icon, title, when, note, onPress }: { icon: IconName; title: string; when: string; note?: string | null; onPress: () => void }) {
-    return (
-      <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={onPress}>
-        <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
-          <Icon name={icon} size={20} color={colors.white} strokeWidth={icon === 'pill' ? 1.8 : 2} />
-        </LinearGradient>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={styles.cardTitle}>{title}</Text>
-          <Text style={styles.cardWhen}>{when}</Text>
-          {note ? <Text style={styles.cardNote}>{note}</Text> : null}
-        </View>
-        <Icon name="chevron-right" size={18} color={colors.accentDeep} strokeWidth={2.2} />
-      </TouchableOpacity>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -95,16 +104,16 @@ export default function Notifications() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: colors.muted, marginTop: 16, marginBottom: 12, marginHorizontal: 2 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: c.muted, marginTop: 16, marginBottom: 12, marginHorizontal: 2 },
   emptyBox: { alignItems: 'center', marginTop: 48, gap: 16 },
-  emptyIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  empty: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 20, color: colors.muted, textAlign: 'center', paddingHorizontal: 24 },
-  card: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, marginBottom: 10 },
+  emptyIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  empty: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 20, color: c.muted, textAlign: 'center', paddingHorizontal: 24 },
+  card: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, marginBottom: 10 },
   iconCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  cardTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink },
-  cardWhen: { fontFamily: fonts.body5, fontSize: 12, color: colors.accentDeep, marginTop: 2 },
-  cardNote: { fontFamily: fonts.body5, fontSize: 11, color: colors.muted, marginTop: 2 },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 16 },
+  cardTitle: { fontFamily: fonts.display, fontSize: 15, color: c.ink },
+  cardWhen: { fontFamily: fonts.body5, fontSize: 12, color: c.accentDeep, marginTop: 2 },
+  cardNote: { fontFamily: fonts.body5, fontSize: 11, color: c.muted, marginTop: 2 },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint, textAlign: 'center', marginTop: 16 },
 });

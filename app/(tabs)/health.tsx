@@ -2,13 +2,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../../components/Card';
+import { makeCardStyle } from '../../components/Card';
 import { Icon, IconName } from '../../components/Icons';
 import ScreenGlow from '../../components/ScreenGlow';
 import TabHeader from '../../components/TabHeader';
 import { usePregnancy, weekSubtitle } from '../../hooks/usePregnancy';
 import { pendingCount, trySyncAll } from '../../lib/healthSync';
-import { colors, fonts, gradient, radius, shadow } from '../../lib/theme';
+import { useTheme, useThemedStyles } from '../../lib/ThemeContext';
+import { Colors, fonts, radius } from '../../lib/theme';
 
 const TOOLS: { route: string; icon: IconName; title: string; sub: string }[] = [
   { route: '/kick-counter', icon: 'footprint', title: 'Kick Counter', sub: "Track baby's daily movements" },
@@ -20,6 +21,8 @@ const TOOLS: { route: string; icon: IconName; title: string; sub: string }[] = [
 ];
 
 export default function Health() {
+  const { colors, gradient, shadow } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const info = usePregnancy();
   const [pending, setPending] = useState(0);
@@ -65,12 +68,12 @@ export default function Health() {
 
         <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/emergency-info')} style={shadow.accent}>
           <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.emergency}>
-            <View style={styles.emergencyIcon}><Icon name="medkit" size={24} color={colors.white} /></View>
+            <View style={styles.emergencyIcon}><Icon name="medkit" size={24} color={colors.onAccent} /></View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.emergencyTitle}>Emergency Information</Text>
               <Text style={styles.emergencySub}>Doctor, hospital, blood group & contacts</Text>
             </View>
-            <Icon name="chevron-right" size={18} color={colors.white} strokeWidth={2.4} />
+            <Icon name="chevron-right" size={18} color={colors.onAccent} strokeWidth={2.4} />
           </LinearGradient>
         </TouchableOpacity>
 
@@ -86,30 +89,30 @@ export default function Health() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvas },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.canvas },
   scroll: { padding: 20, paddingTop: 14, paddingBottom: 140 },
   titleBlock: { marginTop: 26 },
-  title: { fontFamily: fonts.display, fontSize: 30, color: colors.ink },
-  subtitle: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted, marginTop: 6 },
+  title: { fontFamily: fonts.display, fontSize: 30, color: c.ink },
+  subtitle: { fontFamily: fonts.body5, fontSize: 13, color: c.muted, marginTop: 6 },
 
   syncPill: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: colors.accentSoft, borderRadius: radius.tile, padding: 12, marginTop: 18,
+    backgroundColor: c.accentSoft, borderRadius: radius.tile, padding: 12, marginTop: 18,
   },
-  syncText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 16, color: colors.accentDeep },
+  syncText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 16, color: c.accentDeep },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 18 },
-  tile: { ...cardStyle, width: '47.8%', flexGrow: 1, padding: 16 },
-  tileIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  tileTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
-  tileSub: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 15, color: colors.muted, marginTop: 5 },
+  tile: { ...makeCardStyle(c), width: '47.8%', flexGrow: 1, padding: 16 },
+  tileIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+  tileTitle: { fontFamily: fonts.display, fontSize: 16, color: c.ink },
+  tileSub: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 15, color: c.muted, marginTop: 5 },
 
   emergency: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: radius.tile, padding: 16, marginTop: 14 },
   emergencyIcon: { width: 46, height: 46, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  emergencyTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.white },
+  emergencyTitle: { fontFamily: fonts.display, fontSize: 16, color: c.onAccent },
   emergencySub: { fontFamily: fonts.body5, fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
 
   disclaimerRow: { flexDirection: 'row', gap: 9, marginTop: 18, paddingHorizontal: 2 },
-  disclaimer: { flex: 1, fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint },
+  disclaimer: { flex: 1, fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint },
 });

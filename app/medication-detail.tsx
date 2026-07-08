@@ -1,13 +1,14 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { displayTime } from '../lib/dates';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 type Med = {
   id: string;
@@ -24,6 +25,8 @@ function dateKey(d: Date) {
 }
 
 export default function MedicationDetail() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
   const [med, setMed] = useState<Med | null>(null);
@@ -199,34 +202,34 @@ export default function MedicationDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  muted: { color: colors.muted, fontFamily: fonts.body4 },
-  infoCard: { ...cardStyle, padding: 16, marginBottom: 20 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  muted: { color: c.muted, fontFamily: fonts.body4 },
+  infoCard: { ...makeCardStyle(c), padding: 16, marginBottom: 20 },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 },
-  infoLabel: { fontSize: 13, color: colors.muted, fontFamily: fonts.body4 },
-  infoValue: { fontSize: 13, color: colors.ink, fontFamily: fonts.body5, flex: 1, textAlign: 'right' },
+  infoLabel: { fontSize: 13, color: c.muted, fontFamily: fonts.body4 },
+  infoValue: { fontSize: 13, color: c.ink, fontFamily: fonts.body5, flex: 1, textAlign: 'right' },
   monthHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   monthBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  monthTitle: { fontSize: 16, fontFamily: fonts.displaySemi, color: colors.ink },
+  monthTitle: { fontSize: 16, fontFamily: fonts.displaySemi, color: c.ink },
   weekdays: { flexDirection: 'row', marginBottom: 6 },
-  weekday: { flex: 1, textAlign: 'center', fontSize: 11, color: colors.faint, fontFamily: fonts.displaySemi },
+  weekday: { flex: 1, textAlign: 'center', fontSize: 11, color: c.faint, fontFamily: fonts.displaySemi },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: { width: `${100 / 7}%`, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', padding: 3 },
   dayDot: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
-  dayFull: { backgroundColor: colors.accent },
-  dayPartial: { backgroundColor: colors.petal },
-  dayMissed: { backgroundColor: '#F4ECEF' },
-  dayToday: { borderWidth: 2, borderColor: colors.accentDeep },
-  dayNum: { fontSize: 13, color: colors.ink, fontFamily: fonts.body4 },
-  dayNumLight: { color: '#FFF', fontFamily: fonts.displaySemi },
+  dayFull: { backgroundColor: c.accentFill },
+  dayPartial: { backgroundColor: c.petal },
+  dayMissed: { backgroundColor: c.subtleBg },
+  dayToday: { borderWidth: 2, borderColor: c.accentDeep },
+  dayNum: { fontSize: 13, color: c.ink, fontFamily: fonts.body4 },
+  dayNumLight: { color: c.onAccent, fontFamily: fonts.displaySemi },
   legend: { flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 14 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 12, height: 12, borderRadius: 6 },
-  legendText: { fontSize: 11, color: colors.muted, fontFamily: fonts.body4 },
-  adherenceCard: { backgroundColor: colors.accentSoft, borderRadius: radius.card, padding: 18, alignItems: 'center', marginTop: 20 },
-  adherenceLabel: { fontSize: 12, color: colors.accentDeep, fontFamily: fonts.displaySemi, letterSpacing: 0.4 },
-  adherenceValue: { fontSize: 36, color: colors.accentDeep, fontFamily: fonts.displaySemi, marginVertical: 2 },
-  adherenceSub: { fontSize: 12, color: colors.accentDeep, fontFamily: fonts.body4 },
-  note: { fontSize: 11, color: colors.faint, textAlign: 'center', marginTop: 16, lineHeight: 16, fontFamily: fonts.body4 },
+  legendText: { fontSize: 11, color: c.muted, fontFamily: fonts.body4 },
+  adherenceCard: { backgroundColor: c.accentSoft, borderRadius: radius.card, padding: 18, alignItems: 'center', marginTop: 20 },
+  adherenceLabel: { fontSize: 12, color: c.accentDeep, fontFamily: fonts.displaySemi, letterSpacing: 0.4 },
+  adherenceValue: { fontSize: 36, color: c.accentDeep, fontFamily: fonts.displaySemi, marginVertical: 2 },
+  adherenceSub: { fontSize: 12, color: c.accentDeep, fontFamily: fonts.body4 },
+  note: { fontSize: 11, color: c.faint, textAlign: 'center', marginTop: 16, lineHeight: 16, fontFamily: fonts.body4 },
 });

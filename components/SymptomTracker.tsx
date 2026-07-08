@@ -4,8 +4,9 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { todayStr } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import { quickSymptoms, SYMPTOM_LOOKUP, SymptomData } from '../lib/symptoms';
-import { colors, fonts } from '../lib/theme';
-import { cardStyle } from './Card';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts } from '../lib/theme';
+import { makeCardStyle } from './Card';
 import GradientButton from './GradientButton';
 import { Icon, PencilIcon } from './Icons';
 
@@ -13,6 +14,8 @@ type Props = { date?: string; readOnly?: boolean };
 
 export default function SymptomTracker({ date, readOnly = false }: Props) {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const logDate = date ?? todayStr();
   const [data, setData] = useState<SymptomData>({});
 
@@ -88,7 +91,7 @@ export default function SymptomTracker({ date, readOnly = false }: Props) {
               onPress={() => quickToggle(s.id)}
               activeOpacity={0.8}
             >
-              {on && <Icon name="check" size={13} color={colors.white} strokeWidth={2.4} />}
+              {on && <Icon name="check" size={13} color={colors.onAccent} strokeWidth={2.4} />}
               <Text style={[styles.chipText, on && styles.chipTextOn]}>{s.label}</Text>
             </TouchableOpacity>
           );
@@ -98,25 +101,25 @@ export default function SymptomTracker({ date, readOnly = false }: Props) {
       <GradientButton
         label="Log symptoms"
         onPress={openFull}
-        icon={<PencilIcon size={16} color={colors.white} />}
+        icon={<PencilIcon size={16} color={colors.onAccent} />}
         style={{ marginTop: 16 }}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  card: { ...cardStyle, padding: 16, marginTop: 12 },
-  title: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  card: { ...makeCardStyle(c), padding: 16, marginTop: 12 },
+  title: { fontFamily: fonts.display, fontSize: 16, color: c.ink },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: colors.chipBg, borderWidth: 1, borderColor: colors.cardBorder,
+    backgroundColor: c.chipBg, borderWidth: 1, borderColor: c.cardBorder,
     borderRadius: 100, paddingVertical: 9, paddingHorizontal: 14,
   },
-  chipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  check: { color: colors.white, fontSize: 12, fontFamily: fonts.body7 },
-  chipText: { fontFamily: fonts.body6, fontSize: 12, color: '#6E5560' },
-  chipTextOn: { color: colors.white },
-  empty: { fontSize: 13, color: colors.muted, fontFamily: fonts.body5, marginTop: 10 },
+  chipOn: { backgroundColor: c.accentFill, borderColor: c.accentFill },
+  check: { color: c.onAccent, fontSize: 12, fontFamily: fonts.body7 },
+  chipText: { fontFamily: fonts.body6, fontSize: 12, color: c.subtleText },
+  chipTextOn: { color: c.onAccent },
+  empty: { fontSize: 13, color: c.muted, fontFamily: fonts.body5, marginTop: 10 },
 });

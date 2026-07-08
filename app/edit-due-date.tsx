@@ -8,9 +8,10 @@ import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { dayKey } from '../lib/dates';
-import { DueMethod, dueDateFromDate, dueDateFromTerm, FULL_TERM_DAYS } from '../lib/pregnancy';
+import { DueMethod, dueDateFromDate, dueDateFromTerm, progressFor } from '../lib/pregnancy';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 const METHOD_TABS: { key: DueMethod; label: string }[] = [
   { key: 'due', label: 'Due date' },
@@ -26,11 +27,12 @@ const DATE_LABEL: Record<string, string> = {
 };
 
 function weekFromDue(due: Date) {
-  const daysToGo = Math.round((due.getTime() - Date.now()) / 86400000);
-  return Math.max(0, Math.floor((FULL_TERM_DAYS - daysToGo) / 7));
+  return progressFor(due).week;
 }
 
 export default function EditDueDate() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [pregnancyId, setPregnancyId] = useState<string | null>(null);
   const [currentDue, setCurrentDue] = useState<Date | null>(null);
@@ -132,24 +134,24 @@ export default function EditDueDate() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  muted: { fontFamily: fonts.body5, color: colors.muted },
-  intro: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 19, color: colors.muted, marginBottom: 20 },
-  label: { fontFamily: fonts.display, fontSize: 15, color: colors.ink, marginBottom: 10, marginTop: 6 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  muted: { fontFamily: fonts.body5, color: c.muted },
+  intro: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 19, color: c.muted, marginBottom: 20 },
+  label: { fontFamily: fonts.display, fontSize: 15, color: c.ink, marginBottom: 10, marginTop: 6 },
   methodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 8 },
-  methodBtn: { flexGrow: 1, flexBasis: '46%', paddingVertical: 12, borderRadius: radius.tile, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
-  methodOn: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
-  methodText: { fontFamily: fonts.body6, fontSize: 13, color: '#6E5560' },
-  methodTextOn: { color: colors.accentDeep },
-  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: radius.tile, padding: 16 },
-  dateText: { fontFamily: fonts.body5, fontSize: 15, color: colors.ink },
+  methodBtn: { flexGrow: 1, flexBasis: '46%', paddingVertical: 12, borderRadius: radius.tile, alignItems: 'center', backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder },
+  methodOn: { backgroundColor: c.accentSoft, borderColor: c.accent },
+  methodText: { fontFamily: fonts.body6, fontSize: 13, color: c.subtleText },
+  methodTextOn: { color: c.accentDeep },
+  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: radius.tile, padding: 16 },
+  dateText: { fontFamily: fonts.body5, fontSize: 15, color: c.ink },
   termRow: { flexDirection: 'row', gap: 12 },
-  termField: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: radius.tile, paddingHorizontal: 16, paddingVertical: 12 },
-  termInput: { fontFamily: fonts.display, fontSize: 20, color: colors.ink, minWidth: 36 },
-  termUnit: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted },
-  previewCard: { backgroundColor: colors.accentSoft, borderRadius: radius.card, padding: 16, marginTop: 20 },
-  previewLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: colors.accentDeep },
-  previewDate: { fontFamily: fonts.display, fontSize: 16, color: colors.ink, marginTop: 4 },
-  previewChange: { fontFamily: fonts.body5, fontSize: 13, color: colors.accentDeep, marginTop: 8 },
+  termField: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: radius.tile, paddingHorizontal: 16, paddingVertical: 12 },
+  termInput: { fontFamily: fonts.display, fontSize: 20, color: c.ink, minWidth: 36 },
+  termUnit: { fontFamily: fonts.body5, fontSize: 14, color: c.muted },
+  previewCard: { backgroundColor: c.accentSoft, borderRadius: radius.card, padding: 16, marginTop: 20 },
+  previewLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: c.accentDeep },
+  previewDate: { fontFamily: fonts.display, fontSize: 16, color: c.ink, marginTop: 4 },
+  previewChange: { fontFamily: fonts.body5, fontSize: 13, color: c.accentDeep, marginTop: 8 },
 });

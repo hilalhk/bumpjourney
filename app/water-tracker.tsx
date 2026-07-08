@@ -7,9 +7,12 @@ import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { todayStr } from '../lib/dates';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 function WaterRing({ glasses, goal }: { glasses: number; goal: number }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const size = 206, stroke = 12, r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
   const dash = circ * Math.min(1, glasses / goal);
@@ -31,6 +34,8 @@ function WaterRing({ glasses, goal }: { glasses: number; goal: number }) {
 }
 
 export default function WaterTracker() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [glasses, setGlasses] = useState(0);
   const [goal] = useState(8);
 
@@ -70,7 +75,7 @@ export default function WaterTracker() {
                 onPress={() => setCount(i < glasses ? i : i + 1)}
                 activeOpacity={0.8}
               >
-                <Icon name="water" size={26} color={filled ? colors.accent : '#D8CDD4'} />
+                <Icon name="water" size={26} color={filled ? colors.accent : colors.inactive} />
               </TouchableOpacity>
             );
           })}
@@ -78,12 +83,12 @@ export default function WaterTracker() {
 
         <View style={styles.controls}>
           <TouchableOpacity style={styles.minusBtn} onPress={() => setCount(glasses - 1)} activeOpacity={0.85}>
-            <Icon name="minus" size={22} color="#6E5560" strokeWidth={2.4} />
+            <Icon name="minus" size={22} color={colors.subtleText} strokeWidth={2.4} />
           </TouchableOpacity>
           <GradientButton
             label="Add a glass"
             onPress={() => setCount(glasses + 1)}
-            icon={<Icon name="plus" size={20} color={colors.white} strokeWidth={2.6} />}
+            icon={<Icon name="plus" size={20} color={colors.onAccent} strokeWidth={2.6} />}
             style={{ borderRadius: 100 }}
           />
         </View>
@@ -104,22 +109,22 @@ export default function WaterTracker() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  ringNum: { fontFamily: fonts.display, fontSize: 60, lineHeight: 60, color: colors.ink },
-  ringGoal: { fontSize: 26, color: colors.faint },
-  ringLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.8, color: colors.muted, marginTop: 8 },
-  ringLitres: { fontFamily: fonts.body5, fontSize: 12, color: colors.accentDeep, marginTop: 8 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  ringNum: { fontFamily: fonts.display, fontSize: 60, lineHeight: 60, color: c.ink },
+  ringGoal: { fontSize: 26, color: c.faint },
+  ringLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.8, color: c.muted, marginTop: 8 },
+  ringLitres: { fontFamily: fonts.body5, fontSize: 12, color: c.accentDeep, marginTop: 8 },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginTop: 26, maxWidth: 300 },
   glass: { width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  glassOn: { backgroundColor: colors.accentSoft },
-  glassOff: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
+  glassOn: { backgroundColor: c.accentSoft },
+  glassOff: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder },
 
   controls: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 28 },
-  minusBtn: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, alignItems: 'center', justifyContent: 'center' },
+  minusBtn: { width: 52, height: 52, borderRadius: 26, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, alignItems: 'center', justifyContent: 'center' },
 
-  celebrate: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.accentSoft, borderRadius: radius.tile, paddingVertical: 14, paddingHorizontal: 18, marginTop: 22 },
-  celebrateText: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 18, color: colors.faint, textAlign: 'center', marginTop: 24, paddingHorizontal: 18 },
+  celebrate: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: c.accentSoft, borderRadius: radius.tile, paddingVertical: 14, paddingHorizontal: 18, marginTop: 22 },
+  celebrateText: { fontFamily: fonts.displaySemi, fontSize: 13, color: c.accentDeep },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 18, color: c.faint, textAlign: 'center', marginTop: 24, paddingHorizontal: 18 },
 });

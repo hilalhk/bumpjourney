@@ -4,7 +4,8 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { displayTime, todayStr } from '../lib/dates';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient, radius, shadow } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius, shadowFor } from '../lib/theme';
 import { BellIcon } from './Icons';
 
 type Med = { id: string; name: string; dosage: string | null; times: string[]; start_date: string };
@@ -23,6 +24,8 @@ function relativeLabel(time: string): string {
 
 export default function TodayMeds() {
   const router = useRouter();
+  const { colors, gradient } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [doses, setDoses] = useState<Dose[]>([]);
 
   const load = useCallback(async () => {
@@ -69,7 +72,7 @@ export default function TodayMeds() {
     <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/medications')} style={styles.shadow}>
       <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.card}>
         <View style={styles.iconBox}>
-          <BellIcon size={22} color={colors.white} strokeWidth={2} />
+          <BellIcon size={22} color={colors.onAccent} strokeWidth={2} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.label}>Next reminder · {displayTime(next.time)}</Text>
@@ -84,13 +87,17 @@ export default function TodayMeds() {
   );
 }
 
-const styles = StyleSheet.create({
-  shadow: { marginTop: 18, ...shadow.accent },
+// This whole card is the accent gradient, which is identical in both schemes —
+// so every color here is fixed against that gradient, not against the canvas.
+const makeStyles = (c: Colors) => StyleSheet.create({
+  shadow: { marginTop: 18, ...shadowFor(c.scheme).accent },
   card: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: radius.tile, padding: 16 },
   iconBox: { width: 44, height: 44, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   label: { fontFamily: fonts.body6, fontSize: 10, color: 'rgba(255,255,255,0.8)', letterSpacing: 0.7, textTransform: 'uppercase' },
-  name: { fontFamily: fonts.display, fontSize: 16, color: colors.white, marginTop: 6 },
+  name: { fontFamily: fonts.display, fontSize: 16, color: c.onAccent, marginTop: 6 },
   meta: { fontFamily: fonts.body5, fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
-  takeBtn: { backgroundColor: colors.white, borderRadius: 100, paddingVertical: 9, paddingHorizontal: 15 },
-  takeText: { fontFamily: fonts.displaySemi, fontSize: 12, color: colors.accentDeep },
+  takeBtn: { backgroundColor: c.onAccent, borderRadius: 100, paddingVertical: 9, paddingHorizontal: 15 },
+  // Sits on the always-white pill above, so it keeps the light-scheme deep rose;
+  // the dark palette's lifted accentDeep would only reach ~3.6:1 here.
+  takeText: { fontFamily: fonts.displaySemi, fontSize: 12, color: '#B83E66' },
 });

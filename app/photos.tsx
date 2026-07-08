@@ -3,15 +3,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { makeCardStyle } from '../components/Card';
 import { showAlert, useConfirm } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { deletePhoto, pickImage, signedUrl, uploadPhoto } from '../lib/photoUpload';
+import { progressFor } from '../lib/pregnancy';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius, shadow } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 type Photo = {
   id: string; storage_path: string; kind: string;
@@ -19,6 +22,9 @@ type Photo = {
 };
 
 export default function Photos() {
+  const { colors, gradient, shadow } = useTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useThemedStyles(makeStyles);
   const confirm = useConfirm();
   const params = useLocalSearchParams<{ kind?: string }>();
   const [kind, setKind] = useState<'bump' | 'ultrasound'>(params.kind === 'ultrasound' ? 'ultrasound' : 'bump');
@@ -45,8 +51,7 @@ export default function Photos() {
       const { data: preg } = await supabase.from('pregnancies').select('due_date').eq('is_active', true).order('created_at', { ascending: false }).limit(1);
       if (preg && preg.length > 0) {
         const due = new Date(preg[0].due_date + 'T00:00:00');
-        const daysToGo = Math.round((due.getTime() - Date.now()) / 86400000);
-        setCurrentWeek(Math.max(0, Math.floor((280 - daysToGo) / 7)));
+        setCurrentWeek(progressFor(due).week);
       }
     })();
   }, []);
@@ -84,8 +89,8 @@ export default function Photos() {
         title="Photos"
         right={
           <TouchableOpacity onPress={onAdd} activeOpacity={0.85} style={shadow.accent}>
-            <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.addBtn}>
-              <Icon name="plus" size={20} color={colors.white} strokeWidth={2.4} />
+            <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.addBtn}>
+              <Icon name="plus" size={20} color={colors.onAccent} strokeWidth={2.4} />
             </LinearGradient>
           </TouchableOpacity>
         }
@@ -137,9 +142,9 @@ export default function Photos() {
         />
       )}
 
-      <Modal visible={!!pending} animationType="slide" transparent>
+      <Modal visible={!!pending} animationType="slide" transparent statusBarTranslucent navigationBarTranslucent>
         <View style={styles.modalWrap}>
-          <View style={styles.modalCard}>
+          <View style={[styles.modalCard, { paddingBottom: 36 + insets.bottom }]}>
             <Text style={styles.modalTitle}>Add a caption</Text>
             {pending && <Image source={{ uri: pending.uri }} style={styles.preview} contentFit="cover" />}
             <TextInput style={styles.captionInput} placeholder="Optional caption…" placeholderTextColor={colors.faint} value={caption} onChangeText={setCaption} />
@@ -156,31 +161,31 @@ export default function Photos() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
   addBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  toggle: { flexDirection: 'row', gap: 6, marginHorizontal: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 4 },
+  toggle: { flexDirection: 'row', gap: 6, marginHorizontal: 20, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 14, padding: 4 },
   toggleBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  toggleOn: { backgroundColor: colors.accent },
-  toggleText: { fontFamily: fonts.body6, fontSize: 12, color: colors.muted },
-  toggleTextOn: { color: colors.white },
+  toggleOn: { backgroundColor: c.accentFill },
+  toggleText: { fontFamily: fonts.body6, fontSize: 12, color: c.muted },
+  toggleTextOn: { color: c.onAccent },
   emptyBox: { alignItems: 'center', marginTop: 48, gap: 16 },
-  emptyIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 20, color: colors.muted, textAlign: 'center', paddingHorizontal: 32 },
-  photoCard: { ...cardStyle, overflow: 'hidden', marginBottom: 12, padding: 0 },
-  photo: { width: '100%', height: 280, backgroundColor: '#EEE' },
+  emptyIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  emptyText: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 20, color: c.muted, textAlign: 'center', paddingHorizontal: 32 },
+  photoCard: { ...makeCardStyle(c), overflow: 'hidden', marginBottom: 12, padding: 0 },
+  photo: { width: '100%', height: 280, backgroundColor: c.subtleBg },
   photoPlaceholder: { alignItems: 'center', justifyContent: 'center' },
   photoMeta: { flexDirection: 'row', alignItems: 'flex-start', padding: 14, gap: 8 },
-  photoWeek: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
-  photoDate: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginTop: 2 },
-  photoCaption: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 18, color: '#6E5560', marginTop: 4 },
-  note: { fontFamily: fonts.body5, fontSize: 11, color: colors.faint, textAlign: 'center', marginVertical: 16 },
-  modalWrap: { flex: 1, backgroundColor: 'rgba(58,22,38,0.45)', justifyContent: 'flex-end' },
-  modalCard: { backgroundColor: colors.canvas, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36 },
-  modalTitle: { fontFamily: fonts.display, fontSize: 19, color: colors.ink, marginBottom: 12 },
-  preview: { width: '100%', height: 200, borderRadius: radius.card, marginBottom: 12, backgroundColor: '#EEE' },
-  captionInput: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 13, fontFamily: fonts.body5, fontSize: 14, color: colors.ink },
+  photoWeek: { fontFamily: fonts.displaySemi, fontSize: 13, color: c.accentDeep },
+  photoDate: { fontFamily: fonts.body5, fontSize: 12, color: c.muted, marginTop: 2 },
+  photoCaption: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 18, color: c.subtleText, marginTop: 4 },
+  note: { fontFamily: fonts.body5, fontSize: 11, color: c.faint, textAlign: 'center', marginVertical: 16 },
+  modalWrap: { flex: 1, backgroundColor: c.scrim, justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: c.canvas, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36 },
+  modalTitle: { fontFamily: fonts.display, fontSize: 19, color: c.ink, marginBottom: 12 },
+  preview: { width: '100%', height: 200, borderRadius: radius.card, marginBottom: 12, backgroundColor: c.subtleBg },
+  captionInput: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 14, padding: 13, fontFamily: fonts.body5, fontSize: 14, color: c.ink },
   modalActions: { flexDirection: 'row', gap: 10, marginTop: 16, alignItems: 'center' },
-  cancelBtn: { flex: 1, padding: 14, borderRadius: radius.cta, alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
-  cancelText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.body },
+  cancelBtn: { flex: 1, padding: 14, borderRadius: radius.cta, alignItems: 'center', backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder },
+  cancelText: { fontFamily: fonts.displaySemi, fontSize: 14, color: c.body },
 });

@@ -3,7 +3,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Stop } from 'react-native-svg';
-import { cardStyle } from '../../components/Card';
+import { makeCardStyle } from '../../components/Card';
 import DayStrip from '../../components/DayStrip';
 import { MilestoneGlyph } from '../../components/Glyphs';
 import { Icon, IconName } from '../../components/Icons';
@@ -14,16 +14,20 @@ import TodayMeds from '../../components/TodayMeds';
 import { BabiesInfo, countLabel, SEX_LABEL, readBabies } from '../../lib/babies';
 import { getBabySize } from '../../lib/babySizes';
 import { getMultiplesTip } from '../../lib/multiplesContent';
-import { dayKey } from '../../lib/dates';
+import { dayEndIso, dayKey, dayStartIso } from '../../lib/dates';
 import { getMilestones } from '../../lib/milestones';
+import { progressFor } from '../../lib/pregnancy';
 import { supabase } from '../../lib/supabase';
-import { colors, fonts, gradient } from '../../lib/theme';
+import { useTheme, useThemedStyles } from '../../lib/ThemeContext';
+import { Colors, fonts } from '../../lib/theme';
 import { firstName } from '../../lib/user';
 import { getWeekContent } from '../../lib/weeklyContent';
 
 type RawContraction = { start: string; end: string };
 
 function ProgressRing({ progress, week, day }: { progress: number; week: number; day: number }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const size = 150;
   const stroke = 9;
   const r = (size - stroke) / 2;
@@ -55,6 +59,8 @@ function ProgressRing({ progress, week, day }: { progress: number; week: number;
 
 export default function Home() {
   const router = useRouter();
+  const { colors, gradient } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -89,7 +95,7 @@ export default function Home() {
         const today = dayKey(new Date());
         const [{ data: kt }, { data: w }, { data: appt }, { data: details }] = await Promise.all([
           supabase.from('kick_sessions').select('kick_count')
-            .gte('started_at', today + 'T00:00:00').lte('started_at', today + 'T23:59:59'),
+            .gte('started_at', dayStartIso(today)).lt('started_at', dayEndIso(today)),
           supabase.from('water_logs').select('glasses, goal').eq('log_date', today).maybeSingle(),
           supabase.from('appointments').select('appt_at, title')
             .gte('appt_at', new Date().toISOString()).order('appt_at', { ascending: true }).limit(1),
@@ -105,7 +111,7 @@ export default function Home() {
           });
         } else setNextAppt(null);
       })();
-    }, [])
+    }, [router])
   );
 
   useEffect(() => {
@@ -155,13 +161,8 @@ export default function Home() {
     return <View style={styles.centerBox}><Text style={styles.muted}>Loading…</Text></View>;
   }
 
-  const msPerDay = 24 * 60 * 60 * 1000;
   function weekInfoFor(dateKey: string) {
-    const d = new Date(dateKey + 'T00:00:00');
-    const daysToGo = Math.round((dueDate!.getTime() - d.getTime()) / msPerDay);
-    const daysAlong = 280 - daysToGo;
-    return { week: Math.max(0, Math.floor(daysAlong / 7)), day: Math.max(0, daysAlong % 7),
-      daysToGo: Math.max(0, daysToGo), daysAlong };
+    return progressFor(dueDate!, new Date(dateKey + 'T00:00:00'));
   }
 
   const todayInfo = weekInfoFor(todayKey);
@@ -345,6 +346,8 @@ export default function Home() {
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
 function ToolTile({ icon, big, sub, onPress }: { icon: IconName; big: string; sub: string; onPress: () => void }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <TouchableOpacity style={styles.tile} activeOpacity={0.85} onPress={onPress}>
       <View style={styles.tileIcon}><Icon name={icon} size={20} color={colors.accent} /></View>
@@ -355,6 +358,7 @@ function ToolTile({ icon, big, sub, onPress }: { icon: IconName; big: string; su
 }
 
 function Stat({ v, k }: { v: string; k: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.stat}>
       <Text style={styles.statV}>{v}</Text>
@@ -363,72 +367,72 @@ function Stat({ v, k }: { v: string; k: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvas },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.canvas },
   container: { flex: 1 },
-  centerBox: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.canvas },
-  muted: { color: colors.muted, fontFamily: fonts.body5 },
+  centerBox: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: c.canvas },
+  muted: { color: c.muted, fontFamily: fonts.body5 },
 
   heroWrap: { alignItems: 'center', marginTop: 24 },
   triPill: { borderRadius: 100, paddingVertical: 9, paddingHorizontal: 18, marginBottom: 18 },
-  triText: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.white, letterSpacing: 0.3 },
-  ringNum: { fontFamily: fonts.display, fontSize: 50, lineHeight: 52, color: colors.ink },
-  ringLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.6, color: colors.muted, marginTop: 4 },
-  ringDays: { fontFamily: fonts.display, fontSize: 12, color: colors.accent, marginTop: 6 },
-  daysToGo: { fontFamily: fonts.display, fontSize: 16, color: colors.accent, marginTop: 16 },
+  triText: { fontFamily: fonts.displaySemi, fontSize: 13, color: c.onAccent, letterSpacing: 0.3 },
+  ringNum: { fontFamily: fonts.display, fontSize: 50, lineHeight: 52, color: c.ink },
+  ringLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.6, color: c.muted, marginTop: 4 },
+  ringDays: { fontFamily: fonts.display, fontSize: 12, color: c.accent, marginTop: 6 },
+  daysToGo: { fontFamily: fonts.display, fontSize: 16, color: c.accent, marginTop: 16 },
 
-  sizeCard: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 13, padding: 13, marginTop: 16, width: '100%' },
-  sizeEmojiBox: { width: 48, height: 48, borderRadius: 14, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  sizeCard: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 13, padding: 13, marginTop: 16, width: '100%' },
+  sizeEmojiBox: { width: 48, height: 48, borderRadius: 14, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
   sizeEmoji: { fontSize: 26 },
-  sizeLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: colors.accent },
-  sizeItem: { fontFamily: fonts.display, fontSize: 16, color: colors.ink, marginTop: 5 },
-  sizeMeta: { fontFamily: fonts.body5, fontSize: 11, color: colors.muted, marginTop: 4 },
-  dueBox: { alignItems: 'flex-end', paddingLeft: 10, marginLeft: 2, borderLeftWidth: 1, borderLeftColor: colors.cardBorder },
-  dueLabel: { fontFamily: fonts.body6, fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: colors.muted },
-  dueValue: { fontFamily: fonts.display, fontSize: 14, color: colors.ink, marginTop: 5 },
+  sizeLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: c.accent },
+  sizeItem: { fontFamily: fonts.display, fontSize: 16, color: c.ink, marginTop: 5 },
+  sizeMeta: { fontFamily: fonts.body5, fontSize: 11, color: c.muted, marginTop: 4 },
+  dueBox: { alignItems: 'flex-end', paddingLeft: 10, marginLeft: 2, borderLeftWidth: 1, borderLeftColor: c.cardBorder },
+  dueLabel: { fontFamily: fonts.body6, fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: c.muted },
+  dueValue: { fontFamily: fonts.display, fontSize: 14, color: c.ink, marginTop: 5 },
 
-  babiesCard: { ...cardStyle, padding: 14, paddingHorizontal: 16, marginTop: 16 },
-  babiesTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink, marginBottom: 2 },
+  babiesCard: { ...makeCardStyle(c), padding: 14, paddingHorizontal: 16, marginTop: 16 },
+  babiesTitle: { fontFamily: fonts.display, fontSize: 15, color: c.ink, marginBottom: 2 },
   babyRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
-  babyRowBorder: { borderTopWidth: 1, borderTopColor: colors.cardBorder },
-  babyDot: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  babyName: { flex: 1, fontFamily: fonts.displaySemi, fontSize: 14, color: colors.ink },
-  babySex: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted },
+  babyRowBorder: { borderTopWidth: 1, borderTopColor: c.cardBorder },
+  babyDot: { width: 32, height: 32, borderRadius: 16, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  babyName: { flex: 1, fontFamily: fonts.displaySemi, fontSize: 14, color: c.ink },
+  babySex: { fontFamily: fonts.body5, fontSize: 12, color: c.muted },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 26 },
-  tile: { ...cardStyle, width: '47.8%', flexGrow: 1, padding: 15 },
-  tileIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 13 },
-  tileBig: { fontFamily: fonts.display, fontSize: 24, color: colors.ink },
-  tileSub: { fontFamily: fonts.body5, fontSize: 11, color: colors.muted, marginTop: 5, lineHeight: 15 },
+  tile: { ...makeCardStyle(c), width: '47.8%', flexGrow: 1, padding: 15 },
+  tileIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 13 },
+  tileBig: { fontFamily: fonts.display, fontSize: 24, color: c.ink },
+  tileSub: { fontFamily: fonts.body5, fontSize: 11, color: c.muted, marginTop: 5, lineHeight: 15 },
 
-  insight: { backgroundColor: colors.accentSoft, borderRadius: 18, padding: 16, marginTop: 14 },
+  insight: { backgroundColor: c.accentSoft, borderRadius: 18, padding: 16, marginTop: 14 },
   insightHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  insightLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', color: colors.accentDeep },
-  insightText: { fontFamily: fonts.display, fontSize: 15, lineHeight: 21, color: colors.ink, marginTop: 10 },
+  insightLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', color: c.accentDeep },
+  insightText: { fontFamily: fonts.display, fontSize: 15, lineHeight: 21, color: c.ink, marginTop: 10 },
 
-  sectionTitle: { fontFamily: fonts.display, fontSize: 18, color: colors.ink, marginTop: 24, marginBottom: 13 },
-  mileRow: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 13, padding: 13 },
-  mileIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  mileTitle: { fontFamily: fonts.display, fontSize: 14, color: colors.ink },
-  mileDesc: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 15, color: colors.muted, marginTop: 3 },
+  sectionTitle: { fontFamily: fonts.display, fontSize: 18, color: c.ink, marginTop: 24, marginBottom: 13 },
+  mileRow: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 13, padding: 13 },
+  mileIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  mileTitle: { fontFamily: fonts.display, fontSize: 14, color: c.ink },
+  mileDesc: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 15, color: c.muted, marginTop: 3 },
 
   dayHead: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 20, marginBottom: 4 },
-  dayHeadDate: { fontFamily: fonts.display, fontSize: 16, color: colors.ink },
-  dayHeadWeek: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted },
-  reviewCard: { ...cardStyle, padding: 14, marginTop: 10 },
+  dayHeadDate: { fontFamily: fonts.display, fontSize: 16, color: c.ink },
+  dayHeadWeek: { fontFamily: fonts.body5, fontSize: 12, color: c.muted },
+  reviewCard: { ...makeCardStyle(c), padding: 14, marginTop: 10 },
   reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
-  reviewTitle: { fontFamily: fonts.display, fontSize: 14, color: colors.ink, flex: 1 },
-  viewAll: { fontFamily: fonts.displaySemi, fontSize: 12, color: colors.accent },
+  reviewTitle: { fontFamily: fonts.display, fontSize: 14, color: c.ink, flex: 1 },
+  viewAll: { fontFamily: fonts.displaySemi, fontSize: 12, color: c.accent },
   statsRow: { flexDirection: 'row' },
   stat: { flex: 1 },
-  statV: { fontFamily: fonts.display, fontSize: 18, color: colors.ink },
-  statK: { fontFamily: fonts.body6, fontSize: 9, color: colors.muted, marginTop: 2, letterSpacing: 0.5 },
-  emptyText: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
+  statV: { fontFamily: fonts.display, fontSize: 18, color: c.ink },
+  statK: { fontFamily: fonts.body6, fontSize: 9, color: c.muted, marginTop: 2, letterSpacing: 0.5 },
+  emptyText: { fontFamily: fonts.body5, fontSize: 13, color: c.muted },
   medRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 6 },
-  medName: { fontFamily: fonts.body5, fontSize: 13, color: colors.ink, flex: 1 },
+  medName: { fontFamily: fonts.body5, fontSize: 13, color: c.ink, flex: 1 },
   medStatus: { fontFamily: fonts.body6, fontSize: 12 },
   medTaken: { fontFamily: fonts.body6, fontSize: 12, color: '#5E9E78' },
-  medSkipped: { fontFamily: fonts.body6, fontSize: 12, color: colors.faint },
-  backToday: { textAlign: 'center', color: colors.accent, fontFamily: fonts.displaySemi, fontSize: 14, paddingVertical: 14 },
-  disclaimer: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 24, paddingHorizontal: 14 },
+  medSkipped: { fontFamily: fonts.body6, fontSize: 12, color: c.faint },
+  backToday: { textAlign: 'center', color: c.accent, fontFamily: fonts.displaySemi, fontSize: 14, paddingVertical: 14 },
+  disclaimer: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint, textAlign: 'center', marginTop: 24, paddingHorizontal: 14 },
 });

@@ -1,14 +1,19 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { showAlert } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import { MOODS } from '../lib/journalPrompts';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 export default function JournalEntry() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; prompt?: string; week?: string }>();
   const editing = !!params.id;
@@ -49,7 +54,7 @@ export default function JournalEntry() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScreenGlow />
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity style={styles.circle} onPress={() => router.back()} activeOpacity={0.85}>
           <Icon name="close" size={20} color={colors.body} strokeWidth={2.2} />
         </TouchableOpacity>
@@ -94,19 +99,19 @@ export default function JournalEntry() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 18, paddingBottom: 14 },
-  circle: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { flex: 1, fontFamily: fonts.display, fontSize: 19, color: colors.ink },
-  saveText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.accent, paddingHorizontal: 6 },
-  promptCard: { flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: colors.accentSoft, borderRadius: radius.tile, padding: 13, marginBottom: 14 },
-  promptText: { flex: 1, fontFamily: fonts.body5, fontSize: 13, lineHeight: 18, color: colors.accentDeep },
-  input: { fontFamily: fonts.body5, fontSize: 15, lineHeight: 24, color: colors.ink, minHeight: 180 },
-  moodLabel: { fontFamily: fonts.display, fontSize: 15, color: colors.ink, marginTop: 8, marginBottom: 13 },
+  circle: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { flex: 1, fontFamily: fonts.display, fontSize: 19, color: c.ink },
+  saveText: { fontFamily: fonts.displaySemi, fontSize: 14, color: c.accent, paddingHorizontal: 6 },
+  promptCard: { flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: c.accentSoft, borderRadius: radius.tile, padding: 13, marginBottom: 14 },
+  promptText: { flex: 1, fontFamily: fonts.body5, fontSize: 13, lineHeight: 18, color: c.accentDeep },
+  input: { fontFamily: fonts.body5, fontSize: 15, lineHeight: 24, color: c.ink, minHeight: 180 },
+  moodLabel: { fontFamily: fonts.display, fontSize: 15, color: c.ink, marginTop: 8, marginBottom: 13 },
   moods: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  mood: { paddingVertical: 9, paddingHorizontal: 15, borderRadius: 100, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
-  moodOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  moodText: { fontFamily: fonts.body6, fontSize: 12, color: '#6E5560' },
-  moodTextOn: { color: colors.white },
+  mood: { paddingVertical: 9, paddingHorizontal: 15, borderRadius: 100, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder },
+  moodOn: { backgroundColor: c.accentFill, borderColor: c.accentFill },
+  moodText: { fontFamily: fonts.body6, fontSize: 12, color: c.subtleText },
+  moodTextOn: { color: c.onAccent },
 });

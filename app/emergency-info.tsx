@@ -2,14 +2,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import { Icon, IconName } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient, radius, shadow } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 type Info = {
   doctor_name: string; doctor_phone: string; hospital_name: string; hospital_address: string;
@@ -21,7 +22,30 @@ const EMPTY: Info = {
   blood_group: '', emergency_name: '', emergency_phone: '', allergies: '', medications: '',
 };
 
+type RowProps = { icon: IconName; label: string; value: string; onPress?: () => void; actionIcon?: IconName; last?: boolean };
+
+// Module scope: an inner component is a fresh type per render, remounting the subtree.
+function Row({ icon, label, value, onPress, actionIcon, last }: RowProps) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  if (!value) return null;
+  return (
+    <TouchableOpacity style={[styles.row, !last && styles.rowBorder]} onPress={onPress} disabled={!onPress} activeOpacity={onPress ? 0.7 : 1}>
+      <View style={styles.rowIcon}><Icon name={icon} size={18} color={colors.accent} strokeWidth={1.9} /></View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={styles.rowLabel}>{label}</Text>
+        <Text style={styles.rowValue}>{value}</Text>
+      </View>
+      {onPress && actionIcon && (
+        <View style={styles.action}><Icon name={actionIcon} size={15} color={colors.accentDeep} /></View>
+      )}
+    </TouchableOpacity>
+  );
+}
+
 export default function EmergencyInfo() {
+  const { colors, gradient, shadow } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [info, setInfo] = useState<Info>(EMPTY);
   const [editing, setEditing] = useState(false);
@@ -123,21 +147,6 @@ export default function EmergencyInfo() {
   }
 
   // ── VIEW ──
-  const Row = ({ icon, label, value, onPress, actionIcon, last }: { icon: IconName; label: string; value: string; onPress?: () => void; actionIcon?: IconName; last?: boolean }) => {
-    if (!value) return null;
-    return (
-      <TouchableOpacity style={[styles.row, !last && styles.rowBorder]} onPress={onPress} disabled={!onPress} activeOpacity={onPress ? 0.7 : 1}>
-        <View style={styles.rowIcon}><Icon name={icon} size={18} color={colors.accent} strokeWidth={1.9} /></View>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={styles.rowLabel}>{label}</Text>
-          <Text style={styles.rowValue}>{value}</Text>
-        </View>
-        {onPress && actionIcon && (
-          <View style={styles.action}><Icon name={actionIcon} size={15} color={colors.accentDeep} /></View>
-        )}
-      </TouchableOpacity>
-    );
-  };
 
   // build rows so borders land correctly (skip empties)
   const rows = [
@@ -163,7 +172,7 @@ export default function EmergencyInfo() {
         {/* emergency-services call banner */}
         <TouchableOpacity activeOpacity={0.9} onPress={() => Linking.openURL('tel:911')} style={shadow.accent}>
           <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>
-            <View style={styles.bannerIcon}><Icon name="phone" size={24} color={colors.white} /></View>
+            <View style={styles.bannerIcon}><Icon name="phone" size={24} color={colors.onAccent} /></View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.bannerTitle}>Emergency services</Text>
               <Text style={styles.bannerSub}>Tap to call 911 right away</Text>
@@ -184,30 +193,30 @@ export default function EmergencyInfo() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  muted: { fontFamily: fonts.body5, color: colors.muted },
-  saveTop: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.accent, paddingHorizontal: 6 },
-  circle: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, alignItems: 'center', justifyContent: 'center' },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  muted: { fontFamily: fonts.body5, color: c.muted },
+  saveTop: { fontFamily: fonts.displaySemi, fontSize: 14, color: c.accent, paddingHorizontal: 6 },
+  circle: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, alignItems: 'center', justifyContent: 'center' },
 
   banner: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: radius.tile, padding: 16 },
   bannerIcon: { width: 46, height: 46, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  bannerTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.white },
+  bannerTitle: { fontFamily: fonts.display, fontSize: 16, color: c.onAccent },
   bannerSub: { fontFamily: fonts.body5, fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
-  bannerCall: { backgroundColor: colors.white, borderRadius: 100, paddingVertical: 9, paddingHorizontal: 16 },
-  bannerCallText: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
+  bannerCall: { backgroundColor: c.onAccent, borderRadius: 100, paddingVertical: 9, paddingHorizontal: 16 },
+  bannerCallText: { fontFamily: fonts.displaySemi, fontSize: 13, color: c.accentDeep },
 
-  card: { ...cardStyle, paddingHorizontal: 16, paddingVertical: 4, marginTop: 14 },
+  card: { ...makeCardStyle(c), paddingHorizontal: 16, paddingVertical: 4, marginTop: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13 },
-  rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.cardBorder },
-  rowIcon: { width: 38, height: 38, borderRadius: 11, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  rowLabel: { fontFamily: fonts.body5, fontSize: 11, color: colors.muted },
-  rowValue: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.ink, marginTop: 3 },
-  action: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  rowBorder: { borderBottomWidth: 1, borderBottomColor: c.cardBorder },
+  rowIcon: { width: 38, height: 38, borderRadius: 11, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  rowLabel: { fontFamily: fonts.body5, fontSize: 11, color: c.muted },
+  rowValue: { fontFamily: fonts.displaySemi, fontSize: 14, color: c.ink, marginTop: 3 },
+  action: { width: 34, height: 34, borderRadius: 17, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
 
-  sectionHead: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: colors.accentDeep, marginTop: 22, marginBottom: 11 },
-  fieldLabel: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginBottom: 6 },
-  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 13, fontFamily: fonts.body5, fontSize: 14, color: colors.ink },
+  sectionHead: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: c.accentDeep, marginTop: 22, marginBottom: 11 },
+  fieldLabel: { fontFamily: fonts.body5, fontSize: 12, color: c.muted, marginBottom: 6 },
+  input: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 14, padding: 13, fontFamily: fonts.body5, fontSize: 14, color: c.ink },
   twoCol: { flexDirection: 'row', gap: 10, marginBottom: 12 },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 16 },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint, textAlign: 'center', marginTop: 16 },
 });

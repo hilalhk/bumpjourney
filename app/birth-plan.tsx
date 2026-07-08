@@ -8,7 +8,8 @@ import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { supabase } from '../lib/supabase';
-import { colors, fonts } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts } from '../lib/theme';
 import { firstName } from '../lib/user';
 
 function escapeHtml(s: string) {
@@ -28,6 +29,8 @@ const QUESTIONS: Question[] = [
 ];
 
 export default function BirthPlan() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
@@ -164,7 +167,7 @@ export default function BirthPlan() {
           label={downloading ? 'Preparing…' : 'Download as PDF'}
           onPress={downloadPdf}
           disabled={downloading}
-          icon={<Icon name="download" size={18} color={colors.white} strokeWidth={2.2} />}
+          icon={<Icon name="download" size={18} color={colors.onAccent} strokeWidth={2.2} />}
           style={{ marginTop: 22 }}
         />
 
@@ -174,20 +177,20 @@ export default function BirthPlan() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
   savedPill: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   savedText: { fontFamily: fonts.body5, fontSize: 12, color: '#5E9E78' },
-  intro: { flexDirection: 'row', gap: 10, backgroundColor: colors.accentSoft, borderRadius: 18, padding: 14 },
-  introText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: colors.accentDeep },
-  muted: { fontFamily: fonts.body5, color: colors.muted, textAlign: 'center', marginTop: 16 },
+  intro: { flexDirection: 'row', gap: 10, backgroundColor: c.accentSoft, borderRadius: 18, padding: 14 },
+  introText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: c.accentDeep },
+  muted: { fontFamily: fonts.body5, color: c.muted, textAlign: 'center', marginTop: 16 },
   qBlock: { marginTop: 22 },
-  question: { fontFamily: fonts.display, fontSize: 15, lineHeight: 20, color: colors.ink, marginBottom: 11 },
+  question: { fontFamily: fonts.display, fontSize: 15, lineHeight: 20, color: c.ink, marginBottom: 11 },
   options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  option: { paddingVertical: 10, paddingHorizontal: 15, borderRadius: 100, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
-  optionOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  optionText: { fontFamily: fonts.body6, fontSize: 12, color: '#6E5560' },
-  optionTextOn: { color: colors.white },
-  notesInput: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 14, fontFamily: fonts.body5, fontSize: 14, lineHeight: 20, color: colors.ink, minHeight: 96 },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 16, paddingHorizontal: 14 },
+  option: { paddingVertical: 10, paddingHorizontal: 15, borderRadius: 100, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder },
+  optionOn: { backgroundColor: c.accentFill, borderColor: c.accentFill },
+  optionText: { fontFamily: fonts.body6, fontSize: 12, color: c.subtleText },
+  optionTextOn: { color: c.onAccent },
+  notesInput: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 14, padding: 14, fontFamily: fonts.body5, fontSize: 14, lineHeight: 20, color: c.ink, minHeight: 96 },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint, textAlign: 'center', marginTop: 16, paddingHorizontal: 14 },
 });

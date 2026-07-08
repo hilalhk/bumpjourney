@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo, type ReactElement } from 'react';
-import { colors } from '../lib/theme';
+import { useTheme } from '../lib/ThemeContext';
 import {
     BackPainIcon,
     CalendarSlashIcon,
@@ -20,11 +20,14 @@ const MILESTONE_MAP: Record<string, (p: GlyphProps) => ReactElement> = {
 };
 
 export const MilestoneGlyph = memo(function MilestoneGlyph(
-  { icon, size = 22, color = colors.accent }: { icon: string; size?: number; color?: string }
+  { icon, size = 22, color }: { icon: string; size?: number; color?: string }
 ) {
+  // Defaults resolve at render so they follow the active scheme.
+  const { colors } = useTheme();
+  const tint = color ?? colors.accent;
   const Custom = MILESTONE_MAP[icon];
-  if (Custom) return <Custom size={size} color={color} />;
-  return <Ionicons name={icon as any} size={size} color={color} />;
+  if (Custom) return <Custom size={size} color={tint} />;
+  return <Ionicons name={icon as any} size={size} color={tint} />;
 });
 
 const SYMPTOM_MAP: Record<string, (p: GlyphProps) => ReactElement> = {
@@ -35,9 +38,11 @@ const SYMPTOM_MAP: Record<string, (p: GlyphProps) => ReactElement> = {
 };
 
 export const SymptomGlyph = memo(function SymptomGlyph(
-  { id, fallback, size = 24, color = colors.ink }: { id: string; fallback: string; size?: number; color?: string }
+  { id, fallback, size = 24, color }: { id: string; fallback: string; size?: number; color?: string }
 ) {
+  const { colors } = useTheme();
+  const tint = color ?? colors.ink;
   const Custom = SYMPTOM_MAP[id];
-  if (Custom) return <Custom size={size} color={color} />;
-  return <Ionicons name={fallback as any} size={size} color={color} />;
+  if (Custom) return <Custom size={size} color={tint} />;
+  return <Ionicons name={fallback as any} size={size} color={tint} />;
 });

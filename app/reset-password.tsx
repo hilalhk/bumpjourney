@@ -6,9 +6,12 @@ import GradientButton from '../components/GradientButton';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 export default function ResetPassword() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const params = useLocalSearchParams<{ email: string }>();
   const email = String(params.email ?? '');
@@ -118,24 +121,24 @@ export default function ResetPassword() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
   body: { paddingHorizontal: 28, paddingTop: 28, alignItems: 'center' },
-  title: { fontFamily: fonts.display, fontSize: 26, color: colors.ink },
-  sub: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 21, color: colors.muted, textAlign: 'center', marginTop: 12 },
-  email: { fontFamily: fonts.body6, color: colors.accentDeep },
+  title: { fontFamily: fonts.display, fontSize: 26, color: c.ink },
+  sub: { fontFamily: fonts.body5, fontSize: 14, lineHeight: 21, color: c.muted, textAlign: 'center', marginTop: 12 },
+  email: { fontFamily: fonts.body6, color: c.accentDeep },
   codeInput: {
     width: '100%', marginTop: 28, height: 60, borderRadius: radius.tile,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder,
-    fontFamily: fonts.display, fontSize: 28, letterSpacing: 8, color: colors.ink,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder,
+    fontFamily: fonts.display, fontSize: 28, letterSpacing: 8, color: c.ink,
   },
   pwWrap: {
     width: '100%', marginTop: 12, height: 54, borderRadius: radius.tile,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder,
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 10,
   },
-  pwInput: { flex: 1, fontFamily: fonts.body5, fontSize: 15, color: colors.ink },
-  showText: { fontFamily: fonts.body6, fontSize: 13, color: colors.accentDeep },
-  resend: { fontFamily: fonts.body6, fontSize: 13, color: colors.accentDeep, textAlign: 'center' },
-  resendOff: { color: colors.faint },
+  pwInput: { flex: 1, fontFamily: fonts.body5, fontSize: 15, color: c.ink },
+  showText: { fontFamily: fonts.body6, fontSize: 13, color: c.accentDeep },
+  resend: { fontFamily: fonts.body6, fontSize: 13, color: c.accentDeep, textAlign: 'center' },
+  resendOff: { color: c.faint },
 });

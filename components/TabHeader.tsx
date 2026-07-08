@@ -4,9 +4,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { dayKey } from '../lib/dates';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient, shadow } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, shadowFor } from '../lib/theme';
 import { firstName } from '../lib/user';
 import { BellIcon } from './Icons';
 
@@ -14,6 +16,9 @@ type Props = { subtitle: string; name?: string };
 
 export default function TabHeader({ subtitle, name: nameProp }: Props) {
   const router = useRouter();
+  const { colors, gradient } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [hasNotifications, setHasNotifications] = useState(false);
   const [loadedName, setLoadedName] = useState('');
   const name = nameProp || loadedName;
@@ -49,7 +54,7 @@ export default function TabHeader({ subtitle, name: nameProp }: Props) {
   }
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, { paddingTop: insets.top }]}>
       <TouchableOpacity style={styles.profile} onPress={() => router.push('/settings')} activeOpacity={0.7}>
         <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>
           <Text style={styles.avatarText}>{initial}</Text>
@@ -74,22 +79,22 @@ export default function TabHeader({ subtitle, name: nameProp }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Colors) => StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 11 },
   profile: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11, minWidth: 0 },
-  avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', ...shadow.accent },
-  avatarText: { fontFamily: fonts.displaySemi, fontSize: 17, color: colors.white },
-  name: { fontFamily: fonts.displaySemi, fontSize: 16, color: colors.ink },
-  subtitle: { fontFamily: fonts.body5, fontSize: 11, color: colors.muted, marginTop: 3 },
+  avatar: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', ...shadowFor(c.scheme).accent },
+  avatarText: { fontFamily: fonts.displaySemi, fontSize: 17, color: c.onAccent },
+  name: { fontFamily: fonts.displaySemi, fontSize: 16, color: c.ink },
+  subtitle: { fontFamily: fonts.body5, fontSize: 11, color: c.muted, marginTop: 3 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  sos: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', ...shadow.accent },
-  sosText: { fontFamily: fonts.body6, fontSize: 11, color: colors.white, letterSpacing: 0.5 },
+  sos: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', ...shadowFor(c.scheme).accent },
+  sosText: { fontFamily: fonts.body6, fontSize: 11, color: c.onAccent, letterSpacing: 0.5 },
   circle: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface,
-    borderWidth: 1, borderColor: colors.cardBorder, alignItems: 'center', justifyContent: 'center',
+    width: 40, height: 40, borderRadius: 20, backgroundColor: c.surface,
+    borderWidth: 1, borderColor: c.cardBorder, alignItems: 'center', justifyContent: 'center',
   },
   dot: {
     position: 'absolute', top: 9, right: 11, width: 7, height: 7, borderRadius: 4,
-    backgroundColor: colors.accent, borderWidth: 1.5, borderColor: colors.canvas,
+    backgroundColor: c.accent, borderWidth: 1.5, borderColor: c.canvas,
   },
 });

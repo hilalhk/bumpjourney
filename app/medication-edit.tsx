@@ -9,7 +9,8 @@ import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { cancelMedReminders, scheduleMedReminders } from '../lib/notifications';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 type Freq = 'daily' | 'twice' | 'custom';
 
@@ -26,6 +27,8 @@ function parseTime(t: string) {
 }
 
 export default function MedicationEdit() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const confirm = useConfirm();
   const params = useLocalSearchParams<{ id?: string }>();
@@ -129,7 +132,7 @@ export default function MedicationEdit() {
         <TextInput
           style={styles.input}
           placeholder="e.g. Prenatal vitamin"
-          placeholderTextColor="#BBB"
+          placeholderTextColor={colors.faint}
           value={name}
           onChangeText={setName}
         />
@@ -145,7 +148,7 @@ export default function MedicationEdit() {
         <TextInput
           style={styles.input}
           placeholder="e.g. 1 tablet"
-          placeholderTextColor="#BBB"
+          placeholderTextColor={colors.faint}
           value={dosage}
           onChangeText={setDosage}
         />
@@ -193,7 +196,7 @@ export default function MedicationEdit() {
         <TextInput
           style={[styles.input, { height: 70 }]}
           placeholder="e.g. Take after breakfast"
-          placeholderTextColor="#BBB"
+          placeholderTextColor={colors.faint}
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -237,38 +240,38 @@ export default function MedicationEdit() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  saveTop: { fontSize: 15, fontFamily: fonts.displaySemi, color: colors.accent, paddingHorizontal: 6 },
-  label: { fontSize: 13, fontFamily: fonts.displaySemi, color: colors.ink, marginBottom: 6, marginTop: 14 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  saveTop: { fontSize: 15, fontFamily: fonts.displaySemi, color: c.accent, paddingHorizontal: 6 },
+  label: { fontSize: 13, fontFamily: fonts.displaySemi, color: c.ink, marginBottom: 6, marginTop: 14 },
   input: {
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: radius.tile, padding: 13,
-    fontSize: 15, color: colors.ink, fontFamily: fonts.body4,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: radius.tile, padding: 13,
+    fontSize: 15, color: c.ink, fontFamily: fonts.body4,
   },
-  dateText: { fontSize: 15, color: colors.ink, fontFamily: fonts.body4 },
+  dateText: { fontSize: 15, color: c.ink, fontFamily: fonts.body4 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  chip: { paddingVertical: 5, paddingHorizontal: 11, borderRadius: 16, backgroundColor: colors.accentSoft },
-  chipText: { fontSize: 12, color: colors.accentDeep, fontFamily: fonts.body4 },
+  chip: { paddingVertical: 5, paddingHorizontal: 11, borderRadius: 16, backgroundColor: c.accentSoft },
+  chipText: { fontSize: 12, color: c.accentDeep, fontFamily: fonts.body4 },
   freqRow: { flexDirection: 'row', gap: 8 },
   freqBtn: {
     flex: 1, paddingVertical: 11, borderRadius: radius.tile, alignItems: 'center',
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder,
   },
-  freqOn: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
-  freqText: { fontSize: 12, color: '#666', fontFamily: fonts.body4 },
-  freqTextOn: { color: colors.accentDeep, fontFamily: fonts.displaySemi },
+  freqOn: { backgroundColor: c.accentSoft, borderColor: c.accent },
+  freqText: { fontSize: 12, color: c.subtleText, fontFamily: fonts.body4 },
+  freqTextOn: { color: c.accentDeep, fontFamily: fonts.displaySemi },
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   timeBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: radius.tile, padding: 13,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: radius.tile, padding: 13,
   },
-  timeText: { fontSize: 15, color: colors.ink, fontFamily: fonts.body4 },
+  timeText: { fontSize: 15, color: c.ink, fontFamily: fonts.body4 },
   removeTime: { padding: 4 },
   addTime: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
-  addTimeText: { fontSize: 13, color: colors.accent, fontFamily: fonts.body5 },
-  note: { fontSize: 11, color: colors.faint, marginTop: 16, lineHeight: 16, fontFamily: fonts.body4 },
-  saveBtn: { backgroundColor: colors.accent, borderRadius: radius.button, padding: 16, alignItems: 'center', marginTop: 16 },
-  saveText: { color: '#FFF', fontSize: 16, fontFamily: fonts.displaySemi },
+  addTimeText: { fontSize: 13, color: c.accent, fontFamily: fonts.body5 },
+  note: { fontSize: 11, color: c.faint, marginTop: 16, lineHeight: 16, fontFamily: fonts.body4 },
+  saveBtn: { backgroundColor: c.accentFill, borderRadius: radius.button, padding: 16, alignItems: 'center', marginTop: 16 },
+  saveText: { color: c.onAccent, fontSize: 16, fontFamily: fonts.displaySemi },
   removeBtn: { padding: 16, alignItems: 'center', marginTop: 4 },
-  removeText: { color: '#C0504A', fontSize: 14, fontFamily: fonts.displaySemi },
+  removeText: { color: c.danger, fontSize: 14, fontFamily: fonts.displaySemi },
 });

@@ -4,11 +4,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { makeCardStyle } from '../components/Card';
 import GradientButton from '../components/GradientButton';
 import { Icon, IconName } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
-import { colors, fonts, gradient } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, shadowFor } from '../lib/theme';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -27,6 +29,9 @@ const FEATURES: { icon: IconName; label: string }[] = [
 ];
 
 export default function Intro() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
   const [page, setPage] = useState(0);
@@ -53,7 +58,7 @@ export default function Intro() {
       <ScreenGlow intensity={0.2} />
 
       {page < totalPages - 1 && (
-        <TouchableOpacity style={styles.skip} onPress={finish} hitSlop={8}>
+        <TouchableOpacity style={[styles.skip, { top: insets.top + 14 }]} onPress={finish} hitSlop={8}>
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       )}
@@ -68,8 +73,8 @@ export default function Intro() {
       >
         {/* Slides 1–4 */}
         {SLIDES.map((s, i) => (
-          <View key={s.title} style={[styles.page, { width: SCREEN_W }]}>
-            <View style={styles.art}>{renderArt(i)}</View>
+          <View key={s.title} style={[styles.page, { width: SCREEN_W, paddingTop: insets.top + 60 }]}>
+            <View style={styles.art}><SlideArt index={i} /></View>
             <Text style={styles.title}>{s.title}</Text>
             <Text style={styles.sub}>{s.sub}</Text>
           </View>
@@ -93,7 +98,7 @@ export default function Intro() {
       </ScrollView>
 
       {/* footer */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: 40 + insets.bottom }]}>
         <View style={styles.dots}>
           {Array.from({ length: totalPages }).map((_, i) => (
             <View key={i} style={[styles.dot, i === page && styles.dotOn]} />
@@ -102,7 +107,7 @@ export default function Intro() {
         <GradientButton
           label={page >= totalPages - 1 ? 'Get Started' : 'Next'}
           onPress={next}
-          icon={page < totalPages - 1 ? <Icon name="arrow-right" size={17} color={colors.white} strokeWidth={2.4} /> : undefined}
+          icon={page < totalPages - 1 ? <Icon name="arrow-right" size={17} color={colors.onAccent} strokeWidth={2.4} /> : undefined}
         />
         {page >= totalPages - 1 && (
           <View style={styles.signinRow}>
@@ -115,7 +120,11 @@ export default function Intro() {
   );
 }
 
-function renderArt(i: number) {
+// Was a plain `renderArt(i)` helper; it has to be a real component now that it
+// reads the theme, otherwise the hooks run outside a component.
+function SlideArt({ index: i }: { index: number }) {
+  const { colors, gradient } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   if (i === 0) {
     return (
       <View style={styles.artCircleWrap}>
@@ -153,7 +162,7 @@ function renderArt(i: number) {
       <View style={styles.orbit}>
         <View style={styles.orbitRing} />
         <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.orbitCore}>
-          <Icon name="heart" size={46} color={colors.white} fill />
+          <Icon name="heart" size={46} color={colors.onAccent} fill />
         </LinearGradient>
         {tools.map((t, idx) => {
           const angle = (idx / tools.length) * 2 * Math.PI - Math.PI / 2;
@@ -185,6 +194,8 @@ function renderArt(i: number) {
 }
 
 function FloatChip({ style, label, icon, dot }: { style: any; label: string; icon?: IconName; dot?: boolean }) {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={[styles.floatChip, style]}>
       {dot && <View style={styles.floatDot} />}
@@ -194,65 +205,65 @@ function FloatChip({ style, label, icon, dot }: { style: any; label: string; ico
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvas },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.canvas },
   skip: { position: 'absolute', top: 14, right: 22, zIndex: 10 },
-  skipText: { fontFamily: fonts.body6, fontSize: 13, color: colors.muted },
+  skipText: { fontFamily: fonts.body6, fontSize: 13, color: c.muted },
 
   page: { flex: 1, paddingHorizontal: 30, paddingTop: 60, alignItems: 'center' },
   art: { flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' },
-  title: { fontFamily: fonts.display, fontSize: 27, lineHeight: 32, color: colors.ink, textAlign: 'center' },
-  sub: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 21, color: colors.muted, textAlign: 'center', marginTop: 11, marginBottom: 20 },
+  title: { fontFamily: fonts.display, fontSize: 27, lineHeight: 32, color: c.ink, textAlign: 'center' },
+  sub: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 21, color: c.muted, textAlign: 'center', marginTop: 11, marginBottom: 20 },
 
   // slide 1
   artCircleWrap: { width: 300, height: 330, alignItems: 'center', justifyContent: 'center' },
-  artHalo: { position: 'absolute', width: 212, height: 212, borderRadius: 106, backgroundColor: colors.accentSoft },
+  artHalo: { position: 'absolute', width: 212, height: 212, borderRadius: 106, backgroundColor: c.accentSoft },
   artMother: { width: 188, height: 188, borderRadius: 94 },
   floatChip: {
     position: 'absolute', flexDirection: 'row', alignItems: 'center', gap: 7,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 100,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 100,
     paddingVertical: 8, paddingHorizontal: 13,
-    shadowColor: '#3A1626', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.12, shadowRadius: 22, elevation: 5,
+    shadowColor: shadowFor(c.scheme).card.shadowColor, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.12, shadowRadius: 22, elevation: 5,
   },
-  floatDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.accent },
-  floatLabel: { fontFamily: fonts.displaySemi, fontSize: 12, color: colors.ink },
+  floatDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: c.accent },
+  floatLabel: { fontFamily: fonts.displaySemi, fontSize: 12, color: c.ink },
 
   // slide 2
   growthRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
   growthCol: { alignItems: 'center', gap: 9 },
   growthDot: { alignItems: 'center', justifyContent: 'center' },
-  growthNow: { fontFamily: fonts.displaySemi, fontSize: 12, color: colors.white },
-  growthLabel: { fontFamily: fonts.body6, fontSize: 10, color: colors.muted },
+  growthNow: { fontFamily: fonts.displaySemi, fontSize: 12, color: c.onAccent },
+  growthLabel: { fontFamily: fonts.body6, fontSize: 10, color: c.muted },
 
   // slide 3
   orbit: { width: 300, height: 300, alignItems: 'center', justifyContent: 'center' },
-  orbitRing: { position: 'absolute', width: 252, height: 252, borderRadius: 126, borderWidth: 2, borderColor: '#E6D4DC', borderStyle: 'dashed' },
-  orbitCore: { width: 110, height: 110, borderRadius: 55, alignItems: 'center', justifyContent: 'center', ...{ shadowColor: colors.accent, shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.32, shadowRadius: 32, elevation: 8 } },
-  orbitChip: { position: 'absolute', width: 46, height: 46, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, alignItems: 'center', justifyContent: 'center', ...{ shadowColor: '#3A1626', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 22, elevation: 5 } },
+  orbitRing: { position: 'absolute', width: 252, height: 252, borderRadius: 126, borderWidth: 2, borderColor: c.outline, borderStyle: 'dashed' },
+  orbitCore: { width: 110, height: 110, borderRadius: 55, alignItems: 'center', justifyContent: 'center', ...{ shadowColor: c.accent, shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.32, shadowRadius: 32, elevation: 8 } },
+  orbitChip: { position: 'absolute', width: 46, height: 46, borderRadius: 14, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, alignItems: 'center', justifyContent: 'center', ...{ shadowColor: shadowFor(c.scheme).card.shadowColor, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 22, elevation: 5 } },
 
   // slide 4
   photoWrap: { width: 290, height: 300, alignItems: 'center', justifyContent: 'center' },
-  photo: { position: 'absolute', width: 140, height: 170, borderRadius: 18, borderWidth: 5, borderColor: colors.white },
-  noteCard: { ...cardStyle, position: 'absolute', left: 30, right: 24, bottom: 0, padding: 14, transform: [{ rotate: '-2deg' }] },
+  photo: { position: 'absolute', width: 140, height: 170, borderRadius: 18, borderWidth: 5, borderColor: c.surface },
+  noteCard: { ...makeCardStyle(c), position: 'absolute', left: 30, right: 24, bottom: 0, padding: 14, transform: [{ rotate: '-2deg' }] },
   noteHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  noteIcon: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  noteText: { fontFamily: fonts.body6, fontSize: 11, color: colors.accentDeep, flex: 1 },
-  noteBar: { height: 6, borderRadius: 100, backgroundColor: '#F4ECEF', marginTop: 11 },
+  noteIcon: { width: 26, height: 26, borderRadius: 13, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  noteText: { fontFamily: fonts.body6, fontSize: 11, color: c.accentDeep, flex: 1 },
+  noteBar: { height: 6, borderRadius: 100, backgroundColor: c.subtleBg, marginTop: 11 },
 
   // slide 5
-  logoBox: { width: 72, height: 72, borderRadius: 21, overflow: 'hidden', marginTop: 'auto', ...{ shadowColor: colors.accent, shadowOffset: { width: 0, height: 16 }, shadowOpacity: 0.32, shadowRadius: 36, elevation: 8 } },
+  logoBox: { width: 72, height: 72, borderRadius: 21, overflow: 'hidden', marginTop: 'auto', ...{ shadowColor: c.accent, shadowOffset: { width: 0, height: 16 }, shadowOpacity: 0.32, shadowRadius: 36, elevation: 8 } },
   logoImg: { width: '100%', height: '100%' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 26, marginBottom: 'auto' },
-  feature: { ...cardStyle, width: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 13, borderRadius: 16 },
-  featureIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  featureLabel: { fontFamily: fonts.displaySemi, fontSize: 12, color: colors.ink, flexShrink: 1 },
+  feature: { ...makeCardStyle(c), width: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 13, borderRadius: 16 },
+  featureIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  featureLabel: { fontFamily: fonts.displaySemi, fontSize: 12, color: c.ink, flexShrink: 1 },
 
   // footer
   footer: { paddingHorizontal: 30, paddingBottom: 40 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 7, marginBottom: 22 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#EAD9E0' },
-  dotOn: { width: 26, backgroundColor: colors.accent },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: c.outline },
+  dotOn: { width: 26, backgroundColor: c.accent },
   signinRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 16 },
-  signinText: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
-  signinLink: { fontFamily: fonts.body6, fontSize: 13, color: colors.accentDeep },
+  signinText: { fontFamily: fonts.body5, fontSize: 13, color: c.muted },
+  signinLink: { fontFamily: fonts.body6, fontSize: 13, color: c.accentDeep },
 });

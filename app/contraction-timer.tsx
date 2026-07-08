@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
 import DateTimeModal from '../components/DateTimeModal';
@@ -11,7 +11,8 @@ import TopBar from '../components/TopBar';
 import { dayKeyOf, formatMs, labelOf } from '../lib/dates';
 import { saveSession } from '../lib/healthSync';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 type Contraction = { start: number; end: number | null };
 type RawContraction = { start: string; end: string };
@@ -30,6 +31,8 @@ function avgDuration(list: RawContraction[]) {
 }
 
 export default function ContractionTimer() {
+  const { colors, gradient } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [sessionStart, setSessionStart] = useState<Date | null>(null);
   const [contractions, setContractions] = useState<Contraction[]>([]);
@@ -146,7 +149,7 @@ export default function ContractionTimer() {
 
             <View style={{ alignItems: 'center' }}>
               <TouchableOpacity activeOpacity={0.9} onPress={toggleContraction} style={styles.tapShadow}>
-                <LinearGradient colors={['#E5588A', '#B83E66']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tapCircle}>
+                <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tapCircle}>
                   <View style={styles.tapInner} />
                   <Text style={styles.tapTimer}>{liveTimer}</Text>
                   <Text style={styles.tapLabel}>{active ? 'TAP WHEN IT ENDS' : 'TAP WHEN IT STARTS'}</Text>
@@ -239,7 +242,7 @@ export default function ContractionTimer() {
                 <Text style={styles.filterLabel}>Date</Text>
                 <View style={styles.controls}>
                   <TouchableOpacity style={[styles.chip, filterDate ? styles.chipOn : null]} onPress={() => setShowPicker(true)}>
-                    <Icon name="calendar" size={13} color={filterDate ? colors.white : colors.muted} />
+                    <Icon name="calendar" size={13} color={filterDate ? colors.onAccent : colors.muted} />
                     <Text style={[styles.chipText, filterDate ? styles.chipTextOn : null]}>{filterDate ? labelOf(filterDate) : 'Pick date'}</Text>
                   </TouchableOpacity>
                   {filterDate && (
@@ -292,56 +295,56 @@ export default function ContractionTimer() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  help: { flexDirection: 'row', gap: 9, backgroundColor: colors.accentSoft, borderRadius: radius.tile, padding: 13, marginBottom: 16 },
-  helpText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: colors.accentDeep },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  help: { flexDirection: 'row', gap: 9, backgroundColor: c.accentSoft, borderRadius: radius.tile, padding: 13, marginBottom: 16 },
+  helpText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: c.accentDeep },
 
-  tapShadow: { marginTop: 6, borderRadius: 118, shadowColor: colors.accent, shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.34, shadowRadius: 40, elevation: 8 },
+  tapShadow: { marginTop: 6, borderRadius: 118, shadowColor: c.accent, shadowOffset: { width: 0, height: 18 }, shadowOpacity: 0.34, shadowRadius: 40, elevation: 8 },
   tapCircle: { width: 236, height: 236, borderRadius: 118, alignItems: 'center', justifyContent: 'center' },
   tapInner: { position: 'absolute', top: 14, left: 14, right: 14, bottom: 14, borderRadius: 104, borderWidth: 2, borderColor: 'rgba(255,255,255,0.28)' },
-  tapTimer: { fontFamily: fonts.display, fontSize: 56, color: colors.white },
+  tapTimer: { fontFamily: fonts.display, fontSize: 56, color: c.onAccent },
   tapLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1.6, color: 'rgba(255,255,255,0.9)', marginTop: 8 },
 
-  summary: { ...cardStyle, flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 8, marginTop: 16 },
+  summary: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 8, marginTop: 16 },
   sumStat: { flex: 1, alignItems: 'center' },
-  sumValue: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
-  sumLabel: { fontFamily: fonts.body6, fontSize: 9, letterSpacing: 0.8, color: colors.muted, marginTop: 4 },
-  sumDivider: { width: 1, alignSelf: 'stretch', backgroundColor: colors.cardBorder, marginVertical: 4 },
-  pattern: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', backgroundColor: colors.accentSoft, borderRadius: radius.tile, padding: 13, marginTop: 12 },
-  patternText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 17, color: colors.accentDeep },
+  sumValue: { fontFamily: fonts.display, fontSize: 20, color: c.ink },
+  sumLabel: { fontFamily: fonts.body6, fontSize: 9, letterSpacing: 0.8, color: c.muted, marginTop: 4 },
+  sumDivider: { width: 1, alignSelf: 'stretch', backgroundColor: c.cardBorder, marginVertical: 4 },
+  pattern: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', backgroundColor: c.accentSoft, borderRadius: radius.tile, padding: 13, marginTop: 12 },
+  patternText: { flex: 1, fontFamily: fonts.body5, fontSize: 12, lineHeight: 17, color: c.accentDeep },
 
-  liveList: { ...cardStyle, paddingHorizontal: 16, paddingVertical: 6, marginTop: 14 },
-  liveRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: colors.cardBorder },
+  liveList: { ...makeCardStyle(c), paddingHorizontal: 16, paddingVertical: 6, marginTop: 14 },
+  liveRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: c.cardBorder },
   liveRowLast: { borderBottomWidth: 0 },
-  liveNum: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accent, width: 28 },
+  liveNum: { fontFamily: fonts.displaySemi, fontSize: 13, color: c.accent, width: 28 },
   liveCol: { flex: 1 },
-  liveLabel: { fontFamily: fonts.body6, fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', color: colors.muted },
-  liveValue: { fontFamily: fonts.displaySemi, fontSize: 15, color: colors.ink, marginTop: 4 },
-  liveTime: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted },
-  endBtn: { backgroundColor: colors.accentSoft, borderRadius: radius.cta, padding: 16, alignItems: 'center', marginTop: 14 },
-  endText: { fontFamily: fonts.displaySemi, fontSize: 14, color: colors.accentDeep },
+  liveLabel: { fontFamily: fonts.body6, fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', color: c.muted },
+  liveValue: { fontFamily: fonts.displaySemi, fontSize: 15, color: c.ink, marginTop: 4 },
+  liveTime: { fontFamily: fonts.body5, fontSize: 12, color: c.muted },
+  endBtn: { backgroundColor: c.accentSoft, borderRadius: radius.cta, padding: 16, alignItems: 'center', marginTop: 14 },
+  endText: { fontFamily: fonts.displaySemi, fontSize: 14, color: c.accentDeep },
 
   historyHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 30, marginBottom: 14, paddingHorizontal: 2 },
-  historyTitle: { fontFamily: fonts.display, fontSize: 19, color: colors.ink },
+  historyTitle: { fontFamily: fonts.display, fontSize: 19, color: c.ink },
   filtersBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  filtersText: { fontFamily: fonts.body5, fontSize: 13, color: colors.accentDeep },
-  filterBadge: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.accent, position: 'absolute', top: -2, right: -6 },
-  filterPanel: { ...cardStyle, padding: 14, marginBottom: 14 },
-  filterLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.muted, marginBottom: 10 },
+  filtersText: { fontFamily: fonts.body5, fontSize: 13, color: c.accentDeep },
+  filterBadge: { width: 7, height: 7, borderRadius: 4, backgroundColor: c.accent, position: 'absolute', top: -2, right: -6 },
+  filterPanel: { ...makeCardStyle(c), padding: 14, marginBottom: 14 },
+  filterLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: c.muted, marginBottom: 10 },
   controls: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 6 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 9, paddingHorizontal: 14, borderRadius: 100, backgroundColor: colors.chipBg, borderWidth: 1, borderColor: colors.cardBorder },
-  chipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipText: { fontFamily: fonts.body6, fontSize: 12, color: '#6E5560' },
-  chipTextOn: { color: colors.white },
-  dayCard: { ...cardStyle, padding: 14, paddingHorizontal: 16, marginBottom: 10 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 9, paddingHorizontal: 14, borderRadius: 100, backgroundColor: c.chipBg, borderWidth: 1, borderColor: c.cardBorder },
+  chipOn: { backgroundColor: c.accentFill, borderColor: c.accentFill },
+  chipText: { fontFamily: fonts.body6, fontSize: 12, color: c.subtleText },
+  chipTextOn: { color: c.onAccent },
+  dayCard: { ...makeCardStyle(c), padding: 14, paddingHorizontal: 16, marginBottom: 10 },
   dayHeader: { flexDirection: 'row', alignItems: 'center' },
-  dayLabel: { fontFamily: fonts.display, fontSize: 15, color: colors.ink },
-  daySummary: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginTop: 4 },
-  sessionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 11, marginTop: 11, borderTopWidth: 1, borderTopColor: colors.cardBorder },
-  sessionTime: { fontFamily: fonts.body5, fontSize: 13, color: '#6E5560' },
-  sessionCount: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
-  sessionDur: { fontFamily: fonts.body5, fontSize: 13, color: colors.muted },
-  empty: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted, textAlign: 'center', marginVertical: 24 },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 18, paddingHorizontal: 16 },
+  dayLabel: { fontFamily: fonts.display, fontSize: 15, color: c.ink },
+  daySummary: { fontFamily: fonts.body5, fontSize: 12, color: c.muted, marginTop: 4 },
+  sessionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 11, marginTop: 11, borderTopWidth: 1, borderTopColor: c.cardBorder },
+  sessionTime: { fontFamily: fonts.body5, fontSize: 13, color: c.subtleText },
+  sessionCount: { fontFamily: fonts.displaySemi, fontSize: 13, color: c.accentDeep },
+  sessionDur: { fontFamily: fonts.body5, fontSize: 13, color: c.muted },
+  empty: { fontFamily: fonts.body5, fontSize: 14, color: c.muted, textAlign: 'center', marginVertical: 24 },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint, textAlign: 'center', marginTop: 18, paddingHorizontal: 16 },
 });

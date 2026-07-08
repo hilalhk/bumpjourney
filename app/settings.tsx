@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { showAlert, useConfirm } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -10,11 +10,33 @@ import TopBar from '../components/TopBar';
 import { usePregnancy, weekSubtitle } from '../hooks/usePregnancy';
 import { babiesSummary, readBabies } from '../lib/babies';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient, radius, shadow } from '../lib/theme';
+import { ThemePref, useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius, shadowFor } from '../lib/theme';
 import { fullName } from '../lib/user';
+
+const THEME_OPTIONS: { value: ThemePref; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+];
+
+// Module scope: defining a component inside another creates a new component
+// *type* on every render, which makes React unmount and remount the subtree.
+function EditPill() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <View style={styles.editPill}>
+      <Icon name="pencil" size={13} color={colors.accentDeep} strokeWidth={2.2} />
+      <Text style={styles.editText}>Edit</Text>
+    </View>
+  );
+}
 
 export default function Settings() {
   const router = useRouter();
+  const { colors, gradient, pref, setPref } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const info = usePregnancy();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -90,13 +112,6 @@ export default function Settings() {
     if (error) { showAlert({ title: 'Error', message: 'Could not delete your account: ' + error.message, tone: 'error' }); return; }
     await supabase.auth.signOut();
   }
-
-  const EditPill = () => (
-    <View style={styles.editPill}>
-      <Icon name="pencil" size={13} color={colors.accentDeep} strokeWidth={2.2} />
-      <Text style={styles.editText}>Edit</Text>
-    </View>
-  );
 
   return (
     <View style={styles.container}>
@@ -184,6 +199,33 @@ export default function Settings() {
           </View>
         </View>
 
+        <Text style={styles.sectionLabel}>Appearance</Text>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Theme</Text>
+            <Text style={styles.rowValue}>
+              {pref === 'system' ? 'Matches your device setting' : pref === 'dark' ? 'Always dark' : 'Always light'}
+            </Text>
+            <View style={styles.segment} accessibilityRole="radiogroup">
+              {THEME_OPTIONS.map((opt) => {
+                const on = pref === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    style={[styles.segmentItem, on && styles.segmentItemOn]}
+                    onPress={() => setPref(opt.value)}
+                    activeOpacity={0.8}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: on }}
+                  >
+                    <Text style={[styles.segmentText, on && styles.segmentTextOn]}>{opt.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+
         <Text style={styles.sectionLabel}>About</Text>
         <View style={styles.card}>
           <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://bumpjourney.app/legal-desktop.html#privacy')} activeOpacity={0.7}>
@@ -211,31 +253,37 @@ export default function Settings() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  profile: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 13, padding: 14 },
-  avatar: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center', ...shadow.accent },
-  avatarText: { fontFamily: fonts.displaySemi, fontSize: 22, color: colors.white },
-  profileName: { fontFamily: fonts.display, fontSize: 17, color: colors.ink },
-  profileSub: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginTop: 4 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  profile: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 13, padding: 14 },
+  avatar: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center', ...shadowFor(c.scheme).accent },
+  avatarText: { fontFamily: fonts.displaySemi, fontSize: 22, color: c.onAccent },
+  profileName: { fontFamily: fonts.display, fontSize: 17, color: c.ink },
+  profileSub: { fontFamily: fonts.body5, fontSize: 12, color: c.muted, marginTop: 4 },
 
-  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: colors.muted, marginTop: 22, marginBottom: 11, marginHorizontal: 2 },
-  card: { ...cardStyle, paddingHorizontal: 14 },
+  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: c.muted, marginTop: 22, marginBottom: 11, marginHorizontal: 2 },
+  card: { ...makeCardStyle(c), paddingHorizontal: 14 },
   row: { paddingVertical: 14 },
-  rowBorder: { borderTopWidth: 1, borderTopColor: colors.cardBorder },
-  rowLabel: { fontFamily: fonts.body6, fontSize: 14, color: colors.ink },
-  rowValue: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted, marginTop: 3 },
+  rowBorder: { borderTopWidth: 1, borderTopColor: c.cardBorder },
+  rowLabel: { fontFamily: fonts.body6, fontSize: 14, color: c.ink },
+  rowValue: { fontFamily: fonts.body5, fontSize: 12, color: c.muted, marginTop: 3 },
   linkRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
   nameEditRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 5 },
-  nameInput: { flex: 1, fontFamily: fonts.body5, fontSize: 14, color: colors.ink, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 10, backgroundColor: colors.chipBg },
-  saveText: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
-  cancelText: { fontFamily: fonts.body6, fontSize: 13, color: colors.muted },
-  editPill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: colors.accentSoft, borderRadius: 100, paddingVertical: 6, paddingHorizontal: 11 },
-  editText: { fontFamily: fonts.body6, fontSize: 12, color: colors.accentDeep },
-  disclaimer: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, marginTop: 16 },
-  signOutBtn: { backgroundColor: colors.accentSoft, borderRadius: radius.card, padding: 16, alignItems: 'center', marginTop: 24 },
-  signOutText: { fontFamily: fonts.displaySemi, fontSize: 15, color: colors.accentDeep },
+  nameInput: { flex: 1, fontFamily: fonts.body5, fontSize: 14, color: c.ink, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 10, backgroundColor: c.chipBg },
+  saveText: { fontFamily: fonts.displaySemi, fontSize: 13, color: c.accentDeep },
+  cancelText: { fontFamily: fonts.body6, fontSize: 13, color: c.muted },
+  segment: { flexDirection: 'row', gap: 6, marginTop: 12, backgroundColor: c.chipBg, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 100, padding: 4 },
+  segmentItem: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 100, paddingVertical: 9 },
+  segmentItemOn: { backgroundColor: c.accentFill },
+  segmentText: { fontFamily: fonts.body6, fontSize: 13, color: c.subtleText },
+  segmentTextOn: { color: c.onAccent },
+
+  editPill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: c.accentSoft, borderRadius: 100, paddingVertical: 6, paddingHorizontal: 11 },
+  editText: { fontFamily: fonts.body6, fontSize: 12, color: c.accentDeep },
+  disclaimer: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint, marginTop: 16 },
+  signOutBtn: { backgroundColor: c.accentSoft, borderRadius: radius.card, padding: 16, alignItems: 'center', marginTop: 24 },
+  signOutText: { fontFamily: fonts.displaySemi, fontSize: 15, color: c.accentDeep },
   deleteBtn: { padding: 16, alignItems: 'center', marginTop: 8 },
-  deleteText: { fontFamily: fonts.displaySemi, fontSize: 14, color: '#C0504A' },
-  version: { fontFamily: fonts.body5, fontSize: 11, color: colors.faint, textAlign: 'center', marginTop: 24 },
+  deleteText: { fontFamily: fonts.displaySemi, fontSize: 14, color: c.danger },
+  version: { fontFamily: fonts.body5, fontSize: 11, color: c.faint, textAlign: 'center', marginTop: 24 },
 });

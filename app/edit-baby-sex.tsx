@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import { Icon, IconName } from '../components/Icons';
@@ -9,7 +9,8 @@ import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { Baby, BabySex, babiesPayload, readBabies, resizeBabies } from '../lib/babies';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, radius } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 const SEX_OPTIONS: { key: BabySex; label: string; icon: IconName }[] = [
   { key: 'girl', label: 'Girl', icon: 'gender-girl' },
@@ -21,6 +22,8 @@ const COUNT_OPTIONS = [1, 2, 3, 4];
 const COUNT_CHIP: Record<number, string> = { 1: 'Just one', 2: 'Twins', 3: 'Triplets', 4: 'Quads' };
 
 export default function EditBabies() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [count, setCount] = useState(1);
   const [babies, setBabies] = useState<Baby[]>([{ sex: null, name: '' }]);
@@ -120,7 +123,7 @@ export default function EditBabies() {
                     const on = baby.sex === o.key;
                     return (
                       <TouchableOpacity key={o.key} style={[styles.sexPill, on && styles.sexPillOn]} onPress={() => setSex(i, o.key)} activeOpacity={0.85}>
-                        <Icon name={o.icon} size={17} color={on ? colors.white : colors.accent} />
+                        <Icon name={o.icon} size={17} color={on ? colors.onAccent : colors.accent} />
                         <Text style={[styles.sexText, on && styles.sexTextOn]}>{o.label}</Text>
                       </TouchableOpacity>
                     );
@@ -161,29 +164,29 @@ export default function EditBabies() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  intro: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 19, color: colors.muted, marginBottom: 20 },
-  muted: { fontFamily: fonts.body5, color: colors.muted },
-  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: colors.muted, marginBottom: 12 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  intro: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 19, color: c.muted, marginBottom: 20 },
+  muted: { fontFamily: fonts.body5, color: c.muted },
+  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: c.muted, marginBottom: 12 },
   countRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 22 },
-  countChip: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 100, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
-  countChipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  countChipText: { fontFamily: fonts.body6, fontSize: 13, color: '#6E5560' },
-  countChipTextOn: { color: colors.white },
-  babyCard: { ...cardStyle, padding: 14, marginBottom: 12 },
-  babyHead: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: colors.accentDeep, marginBottom: 12 },
+  countChip: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 100, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder },
+  countChipOn: { backgroundColor: c.accentFill, borderColor: c.accentFill },
+  countChipText: { fontFamily: fonts.body6, fontSize: 13, color: c.subtleText },
+  countChipTextOn: { color: c.onAccent },
+  babyCard: { ...makeCardStyle(c), padding: 14, marginBottom: 12 },
+  babyHead: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: c.accentDeep, marginBottom: 12 },
   sexRow: { flexDirection: 'row', gap: 8 },
-  sexPill: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, borderRadius: radius.tile, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
-  sexPillOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  sexText: { fontFamily: fonts.body6, fontSize: 13, color: colors.ink },
-  sexTextOn: { color: colors.white },
-  nameInput: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 13, marginTop: 10, fontFamily: fonts.body5, fontSize: 14, color: colors.ink },
+  sexPill: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, borderRadius: radius.tile, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder },
+  sexPillOn: { backgroundColor: c.accentFill, borderColor: c.accentFill },
+  sexText: { fontFamily: fonts.body6, fontSize: 13, color: c.ink },
+  sexTextOn: { color: c.onAccent },
+  nameInput: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 14, padding: 13, marginTop: 10, fontFamily: fonts.body5, fontSize: 14, color: c.ink },
   suggestWrap: { marginTop: 12 },
-  suggestLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: colors.muted, marginBottom: 8 },
+  suggestLabel: { fontFamily: fonts.body6, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: c.muted, marginBottom: 8 },
   suggestChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
-  suggestChip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 100, backgroundColor: colors.accentSoft },
-  suggestChipOn: { backgroundColor: colors.accent },
-  suggestChipText: { fontFamily: fonts.body6, fontSize: 12, color: colors.accentDeep },
-  suggestChipTextOn: { color: colors.white },
+  suggestChip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 100, backgroundColor: c.accentSoft },
+  suggestChipOn: { backgroundColor: c.accentFill },
+  suggestChipText: { fontFamily: fonts.body6, fontSize: 12, color: c.accentDeep },
+  suggestChipTextOn: { color: c.onAccent },
 });

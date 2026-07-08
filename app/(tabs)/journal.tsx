@@ -1,15 +1,17 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../../components/Card';
+import { makeCardStyle } from '../../components/Card';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { Icon } from '../../components/Icons';
 import ScreenGlow from '../../components/ScreenGlow';
 import TabHeader from '../../components/TabHeader';
 import { usePregnancy, weekSubtitle } from '../../hooks/usePregnancy';
 import { getPrompts } from '../../lib/journalPrompts';
+import { progressFor } from '../../lib/pregnancy';
 import { supabase } from '../../lib/supabase';
-import { colors, fonts, radius } from '../../lib/theme';
+import { useTheme, useThemedStyles } from '../../lib/ThemeContext';
+import { Colors, fonts, radius } from '../../lib/theme';
 
 type Entry = {
   id: string;
@@ -21,6 +23,8 @@ type Entry = {
 };
 
 export default function Journal() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const confirm = useConfirm();
   const info = usePregnancy();
@@ -34,8 +38,7 @@ export default function Journal() {
       .order('created_at', { ascending: false }).limit(1);
     if (preg && preg.length > 0) {
       const due = new Date(preg[0].due_date + 'T00:00:00');
-      const daysToGo = Math.round((due.getTime() - Date.now()) / 86400000);
-      setWeek(Math.max(4, Math.floor((280 - daysToGo) / 7)));
+      setWeek(Math.max(4, progressFor(due).week));
     }
     const { data } = await supabase
       .from('journal_entries')
@@ -145,39 +148,39 @@ export default function Journal() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvas },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.canvas },
   scroll: { padding: 20, paddingTop: 14, paddingBottom: 140 },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 26 },
-  title: { fontFamily: fonts.display, fontSize: 30, color: colors.ink },
+  title: { fontFamily: fonts.display, fontSize: 30, color: c.ink },
   photosBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder,
     borderRadius: 100, paddingVertical: 9, paddingHorizontal: 14,
   },
-  photosBtnText: { fontFamily: fonts.body6, fontSize: 12, color: colors.accentDeep },
+  photosBtnText: { fontFamily: fonts.body6, fontSize: 12, color: c.accentDeep },
 
-  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: colors.muted, marginTop: 24, marginBottom: 12, marginHorizontal: 2 },
+  sectionLabel: { fontFamily: fonts.body6, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: c.muted, marginTop: 24, marginBottom: 12, marginHorizontal: 2 },
   promptCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: colors.accentSoft, borderRadius: radius.tile, padding: 15, marginBottom: 9,
+    backgroundColor: c.accentSoft, borderRadius: radius.tile, padding: 15, marginBottom: 9,
   },
-  promptText: { flex: 1, fontFamily: fonts.body5, fontSize: 14, lineHeight: 19, color: colors.accentDeep },
+  promptText: { flex: 1, fontFamily: fonts.body5, fontSize: 14, lineHeight: 19, color: c.accentDeep },
   blankBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-    borderWidth: 1.5, borderColor: '#E3C9D4', borderStyle: 'dashed', borderRadius: radius.tile, padding: 14, marginTop: 3,
+    borderWidth: 1.5, borderColor: c.outline, borderStyle: 'dashed', borderRadius: radius.tile, padding: 14, marginTop: 3,
   },
-  blankText: { fontFamily: fonts.displaySemi, fontSize: 13, color: colors.accentDeep },
-  empty: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted, marginTop: 4 },
+  blankText: { fontFamily: fonts.displaySemi, fontSize: 13, color: c.accentDeep },
+  empty: { fontFamily: fonts.body5, fontSize: 14, color: c.muted, marginTop: 4 },
 
-  entryCard: { ...cardStyle, padding: 15, marginBottom: 10 },
+  entryCard: { ...makeCardStyle(c), padding: 15, marginBottom: 10 },
   entryHead: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  weekPill: { backgroundColor: colors.accent, borderRadius: 100, paddingVertical: 4, paddingHorizontal: 10 },
-  weekPillText: { fontFamily: fonts.body6, fontSize: 10, color: colors.white },
-  entryDate: { fontFamily: fonts.body5, fontSize: 11, color: colors.muted },
-  entryPrompt: { fontFamily: fonts.display, fontSize: 13, lineHeight: 18, color: colors.ink, marginTop: 10 },
-  entryBody: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: '#6E5560', marginTop: 6 },
+  weekPill: { backgroundColor: c.accentFill, borderRadius: 100, paddingVertical: 4, paddingHorizontal: 10 },
+  weekPillText: { fontFamily: fonts.body6, fontSize: 10, color: c.onAccent },
+  entryDate: { fontFamily: fonts.body5, fontSize: 11, color: c.muted },
+  entryPrompt: { fontFamily: fonts.display, fontSize: 13, lineHeight: 18, color: c.ink, marginTop: 10 },
+  entryBody: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 18, color: c.subtleText, marginTop: 6 },
   moodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
-  moodTag: { backgroundColor: '#F4ECEF', borderRadius: 100, paddingVertical: 5, paddingHorizontal: 10 },
-  moodTagText: { fontFamily: fonts.body5, fontSize: 10, color: '#6E5560' },
+  moodTag: { backgroundColor: c.subtleBg, borderRadius: 100, paddingVertical: 5, paddingHorizontal: 10 },
+  moodTagText: { fontFamily: fonts.body5, fontSize: 10, color: c.subtleText },
 });

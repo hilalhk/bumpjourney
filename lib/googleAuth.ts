@@ -20,6 +20,7 @@ type Result = { ok: boolean; error?: string };
 export async function signInWithGoogle(): Promise<Result> {
   let mod: any;
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- must stay lazy: a static import would crash Expo Go at module load.
     mod = require('@react-native-google-signin/google-signin');
   } catch {
     return { ok: false, error: 'Google sign-in is only available in the installed app.' };

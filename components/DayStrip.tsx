@@ -1,11 +1,12 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { dayKey } from '../lib/dates';
+import { dayEndIso, dayKey, dayStartIso } from '../lib/dates';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts } from '../lib/theme';
 
 const WEEKDAY = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -22,15 +23,22 @@ function Dot({ color }: { color: string }) {
 type Props = { selected: string; onSelect: (key: string) => void };
 
 function DayStrip({ selected, onSelect }: Props) {
+  const { colors, gradient } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [dataDays, setDataDays] = useState<Set<string>>(new Set());
 
-  const today = new Date();
-  const days: Date[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    days.push(d);
-  }
+  // Keyed on the calendar day, so `days` (and therefore loadDots) is stable
+  // within a day but rolls over if the app is left open past midnight. The old
+  // useCallback([]) froze the query window at whatever day the strip mounted.
+  const todayKey = dayKey(new Date());
+  const days: Date[] = useMemo(() => {
+    const base = new Date(todayKey + 'T00:00:00');
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(base);
+      d.setDate(base.getDate() - (6 - i));
+      return d;
+    });
+  }, [todayKey]);
 
   const loadDots = useCallback(async () => {
     const start = dayKey(days[0]);
@@ -44,16 +52,16 @@ function DayStrip({ selected, onSelect }: Props) {
 
     const { data: kicks } = await supabase
       .from('kick_sessions').select('started_at')
-      .gte('started_at', start + 'T00:00:00').lte('started_at', end + 'T23:59:59');
+      .gte('started_at', dayStartIso(start)).lt('started_at', dayEndIso(end));
     (kicks ?? []).forEach((r) => found.add(dayKey(new Date(r.started_at))));
 
     const { data: cons } = await supabase
       .from('contraction_sessions').select('started_at')
-      .gte('started_at', start + 'T00:00:00').lte('started_at', end + 'T23:59:59');
+      .gte('started_at', dayStartIso(start)).lt('started_at', dayEndIso(end));
     (cons ?? []).forEach((r) => found.add(dayKey(new Date(r.started_at))));
 
     setDataDays(found);
-  }, []);
+  }, [days]);
 
   useFocusEffect(useCallback(() => { loadDots(); }, [loadDots]));
 
@@ -69,7 +77,7 @@ function DayStrip({ selected, onSelect }: Props) {
               <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.pillActive}>
                 <Text style={[styles.weekday, styles.weekdayOn]}>{WEEKDAY[d.getDay()]}</Text>
                 <Text style={[styles.num, styles.numOn]}>{d.getDate()}</Text>
-                <Dot color={colors.white} />
+                <Dot color={colors.onAccent} />
               </LinearGradient>
             </TouchableOpacity>
           );
@@ -90,19 +98,20 @@ function DayStrip({ selected, onSelect }: Props) {
 
 export default memo(DayStrip);
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Colors) => StyleSheet.create({
   row: { flexDirection: 'row', gap: 7 },
   col: { flex: 1 },
   pill: {
     alignItems: 'center', paddingVertical: 9, borderRadius: 14,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder,
   },
   pillActive: {
     alignItems: 'center', paddingVertical: 9, borderRadius: 14,
-    shadowColor: colors.accent, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.32, shadowRadius: 16, elevation: 6,
+    shadowColor: c.accent, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.32, shadowRadius: 16, elevation: 6,
   },
-  weekday: { fontFamily: fonts.body6, fontSize: 10, color: colors.muted },
+  weekday: { fontFamily: fonts.body6, fontSize: 10, color: c.muted },
+  // Sits on the accent gradient pill, so it stays white in both schemes.
   weekdayOn: { color: 'rgba(255,255,255,0.85)' },
-  num: { fontFamily: fonts.display, fontSize: 16, color: colors.ink, marginTop: 6 },
-  numOn: { color: colors.white },
+  num: { fontFamily: fonts.display, fontSize: 16, color: c.ink, marginTop: 6 },
+  numOn: { color: c.onAccent },
 });

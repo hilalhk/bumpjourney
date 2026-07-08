@@ -1,12 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { supabase } from '../lib/supabase';
-import { colors, fonts, gradient, radius, shadow } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 type Item = { id: string; label: string; checked: boolean; custom?: boolean };
 type Section = { title: string; items: Item[] };
@@ -19,6 +20,8 @@ const DEFAULT_SECTIONS: Section[] = [
 ];
 
 export default function HospitalBag() {
+  const { colors, gradient, shadow } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [sections, setSections] = useState<Section[]>(DEFAULT_SECTIONS);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState<string | null>(null);
@@ -94,7 +97,7 @@ export default function HospitalBag() {
                 <View key={it.id} style={[styles.row, i < s.items.length - 1 && styles.rowBorder]}>
                   <TouchableOpacity style={styles.rowMain} onPress={() => toggle(s.title, it.id)} activeOpacity={0.7}>
                     <View style={[styles.check, it.checked && styles.checkOn]}>
-                      {it.checked && <Icon name="check" size={14} color={colors.white} strokeWidth={3} />}
+                      {it.checked && <Icon name="check" size={14} color={colors.onAccent} strokeWidth={3} />}
                     </View>
                     <Text style={[styles.rowLabel, it.checked && styles.rowLabelDone]}>{it.label}</Text>
                   </TouchableOpacity>
@@ -124,27 +127,27 @@ export default function HospitalBag() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
-  muted: { fontFamily: fonts.body5, color: colors.muted, textAlign: 'center', marginTop: 16 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
+  muted: { fontFamily: fonts.body5, color: c.muted, textAlign: 'center', marginTop: 16 },
   progressCard: { borderRadius: radius.tile, padding: 18 },
   progressTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  progressText: { fontFamily: fonts.display, fontSize: 15, color: colors.white },
-  progressPct: { fontFamily: fonts.display, fontSize: 24, color: colors.white },
+  progressText: { fontFamily: fonts.display, fontSize: 15, color: c.onAccent },
+  progressPct: { fontFamily: fonts.display, fontSize: 24, color: c.onAccent },
   track: { height: 8, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.28)', marginTop: 12, overflow: 'hidden' },
-  fill: { height: 8, borderRadius: 100, backgroundColor: colors.white },
+  fill: { height: 8, borderRadius: 100, backgroundColor: c.onAccent },
   section: { marginTop: 22 },
-  sectionTitle: { fontFamily: fonts.display, fontSize: 15, color: colors.ink, marginBottom: 11 },
-  sectionCard: { ...cardStyle, paddingHorizontal: 14, paddingVertical: 4 },
+  sectionTitle: { fontFamily: fonts.display, fontSize: 15, color: c.ink, marginBottom: 11 },
+  sectionCard: { ...makeCardStyle(c), paddingHorizontal: 14, paddingVertical: 4 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12 },
-  rowBorder: { borderBottomWidth: 1, borderBottomColor: '#F4ECEF' },
+  rowBorder: { borderBottomWidth: 1, borderBottomColor: c.subtleBg },
   rowMain: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  check: { width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: '#E0CDD6', alignItems: 'center', justifyContent: 'center' },
-  checkOn: { backgroundColor: colors.accent, borderWidth: 0 },
-  rowLabel: { flex: 1, fontFamily: fonts.body5, fontSize: 14, lineHeight: 18, color: colors.ink },
-  rowLabelDone: { color: colors.faint, textDecorationLine: 'line-through' },
+  check: { width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: c.outline, alignItems: 'center', justifyContent: 'center' },
+  checkOn: { backgroundColor: c.accentFill, borderWidth: 0 },
+  rowLabel: { flex: 1, fontFamily: fonts.body5, fontSize: 14, lineHeight: 18, color: c.ink },
+  rowLabelDone: { color: c.faint, textDecorationLine: 'line-through' },
   addRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 12 },
-  addInput: { flex: 1, fontFamily: fonts.body5, fontSize: 14, color: colors.ink, paddingVertical: 2 },
+  addInput: { flex: 1, fontFamily: fonts.body5, fontSize: 14, color: c.ink, paddingVertical: 2 },
   addBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 12 },
-  addText: { fontFamily: fonts.body6, fontSize: 12, color: colors.accentDeep },
+  addText: { fontFamily: fonts.body6, fontSize: 12, color: c.accentDeep },
 });

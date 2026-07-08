@@ -2,7 +2,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { ReactNode } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
-import { colors, fonts, gradient, radius, shadow } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts, radius } from '../lib/theme';
 
 type Props = {
   label: string;
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export default function GradientButton({ label, onPress, icon, disabled, style, size = 'lg' }: Props) {
+  const { gradient, shadow } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -34,7 +37,7 @@ export default function GradientButton({ label, onPress, icon, disabled, style, 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Colors) => StyleSheet.create({
   btn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -45,5 +48,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.cta,
   },
   btnMd: { paddingVertical: 13 },
-  label: { fontFamily: fonts.displaySemi, fontSize: 16, color: colors.white },
+  label: { fontFamily: fonts.displaySemi, fontSize: 16, color: c.onAccent },
 });

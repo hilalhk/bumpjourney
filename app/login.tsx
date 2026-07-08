@@ -2,15 +2,18 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Polyline, Rect } from 'react-native-svg';
 import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import ScreenGlow from '../components/ScreenGlow';
 import { signInWithGoogle } from '../lib/googleAuth';
 import { supabase } from '../lib/supabase';
-import { colors, fonts } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts } from '../lib/theme';
 
 function MailIcon() {
+  const { colors } = useTheme();
   return (
     <Svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke={colors.muted} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Rect x="3" y="5" width="18" height="14" rx="2" />
@@ -19,6 +22,7 @@ function MailIcon() {
   );
 }
 function LockIcon() {
+  const { colors } = useTheme();
   return (
     <Svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke={colors.muted} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Rect x="4" y="11" width="16" height="10" rx="2" />
@@ -27,6 +31,7 @@ function LockIcon() {
   );
 }
 function EyeIcon({ off }: { off?: boolean }) {
+  const { colors } = useTheme();
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={colors.faint} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
@@ -36,6 +41,7 @@ function EyeIcon({ off }: { off?: boolean }) {
   );
 }
 function PersonIcon() {
+  const { colors } = useTheme();
   return (
     <Svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke={colors.muted} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -55,6 +61,9 @@ function GoogleG() {
 }
 
 export default function Login() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -141,7 +150,7 @@ export default function Login() {
       <ScreenGlow intensity={0.22} />
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={[styles.scroll, { paddingBottom: 48 + kbHeight }]}
+        contentContainerStyle={[styles.scroll, { paddingTop: 48 + insets.top, paddingBottom: 48 + kbHeight }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -255,42 +264,42 @@ export default function Login() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvas },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.canvas },
   scroll: { flexGrow: 1, justifyContent: 'center', padding: 26, paddingVertical: 48 },
   brand: { alignItems: 'center' },
   logoBox: {
     width: 88, height: 88, borderRadius: 24, overflow: 'hidden',
-    shadowColor: colors.accent, shadowOffset: { width: 0, height: 16 }, shadowOpacity: 0.32, shadowRadius: 36, elevation: 8,
+    shadowColor: c.accent, shadowOffset: { width: 0, height: 16 }, shadowOpacity: 0.32, shadowRadius: 36, elevation: 8,
   },
   logoImg: { width: '100%', height: '100%' },
-  logo: { fontSize: 30, fontFamily: fonts.display, color: colors.ink, marginTop: 20 },
-  tagline: { fontSize: 13, fontFamily: fonts.body5, color: colors.muted, marginTop: 8, textAlign: 'center', maxWidth: 250, lineHeight: 19 },
+  logo: { fontSize: 30, fontFamily: fonts.display, color: c.ink, marginTop: 20 },
+  tagline: { fontSize: 13, fontFamily: fonts.body5, color: c.muted, marginTop: 8, textAlign: 'center', maxWidth: 250, lineHeight: 19 },
 
   form: { marginTop: 36 },
-  label: { fontSize: 10, fontFamily: fonts.body6, color: colors.muted, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 8 },
+  label: { fontSize: 10, fontFamily: fonts.body6, color: c.muted, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 8 },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, marginBottom: 8 },
-  forgot: { fontSize: 12, fontFamily: fonts.body6, color: colors.accentDeep },
+  forgot: { fontSize: 12, fontFamily: fonts.body6, color: c.accentDeep },
   inputWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder,
     borderRadius: 14, paddingHorizontal: 14, height: 52,
   },
-  input: { flex: 1, fontSize: 15, color: colors.ink, fontFamily: fonts.body5, paddingVertical: 0 },
+  input: { flex: 1, fontSize: 15, color: c.ink, fontFamily: fonts.body5, paddingVertical: 0 },
 
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 20 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: colors.cardBorder },
-  dividerText: { fontFamily: fonts.body5, fontSize: 12, color: colors.muted },
+  dividerLine: { flex: 1, height: 1, backgroundColor: c.cardBorder },
+  dividerText: { fontFamily: fonts.body5, fontSize: 12, color: c.muted },
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     height: 52, marginTop: 16, borderRadius: 14,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder,
   },
-  googleText: { fontFamily: fonts.body6, fontSize: 15, color: colors.ink },
+  googleText: { fontFamily: fonts.body6, fontSize: 15, color: c.ink },
 
   switch: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 28 },
-  switchText: { fontSize: 13, color: colors.muted, fontFamily: fonts.body5 },
-  switchLink: { fontSize: 13, color: colors.accentDeep, fontFamily: fonts.body6 },
-  disclaimer: { fontSize: 11, color: colors.faint, textAlign: 'center', marginTop: 18, lineHeight: 17, fontFamily: fonts.body5, paddingHorizontal: 30 },
-  disclaimerLink: { textDecorationLine: 'underline', color: colors.muted },
+  switchText: { fontSize: 13, color: c.muted, fontFamily: fonts.body5 },
+  switchLink: { fontSize: 13, color: c.accentDeep, fontFamily: fonts.body6 },
+  disclaimer: { fontSize: 11, color: c.faint, textAlign: 'center', marginTop: 18, lineHeight: 17, fontFamily: fonts.body5, paddingHorizontal: 30 },
+  disclaimerLink: { textDecorationLine: 'underline', color: c.muted },
 });

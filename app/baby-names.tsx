@@ -1,22 +1,35 @@
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { cardStyle } from '../components/Card';
+import { makeCardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
 import TopBar from '../components/TopBar';
 import { BabyName, Gender, ORIGINS, searchNames } from '../lib/babyNames';
 import { supabase } from '../lib/supabase';
-import { colors, fonts } from '../lib/theme';
+import { useTheme, useThemedStyles } from '../lib/ThemeContext';
+import { Colors, fonts } from '../lib/theme';
 
 type Tab = 'browse' | 'favorites';
 
-const TONE: Record<string, { bg: string; color: string }> = {
-  girl: { bg: colors.accentSoft, color: colors.accent },
-  boy: { bg: '#E7ECF5', color: '#5A78A8' },
-  unisex: { bg: '#EEE7F2', color: '#8A77B8' },
-};
+// The pale boy/unisex tints would glow on the dark canvas, so each gets a dark
+// counterpart: a deep tinted chip with a lifted label.
+const toneFor = (c: Colors): Record<string, { bg: string; color: string }> =>
+  c.scheme === 'light'
+    ? {
+        girl: { bg: c.accentSoft, color: c.accent },
+        boy: { bg: '#E7ECF5', color: '#5A78A8' },
+        unisex: { bg: '#EEE7F2', color: '#8A77B8' },
+      }
+    : {
+        girl: { bg: c.accentSoft, color: c.accent },
+        boy: { bg: '#1E2635', color: '#9DB6DC' },
+        unisex: { bg: '#282035', color: '#B7A4D8' },
+      };
 
 export default function BabyNames() {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const tone = toneFor(colors);
   const [tab, setTab] = useState<Tab>('browse');
   const [query, setQuery] = useState('');
   const [gender, setGender] = useState<Gender | 'all'>('all');
@@ -84,7 +97,7 @@ export default function BabyNames() {
                 </TouchableOpacity>
               ))}
               <TouchableOpacity style={[styles.gChip, origin !== 'all' && styles.gChipOn]} onPress={() => setShowOrigins(!showOrigins)}>
-                <Icon name="globe" size={13} color={origin !== 'all' ? colors.white : colors.muted} />
+                <Icon name="globe" size={13} color={origin !== 'all' ? colors.onAccent : colors.muted} />
                 <Text style={[styles.gChipText, origin !== 'all' && styles.gChipTextOn]}>{origin === 'all' ? 'Origin' : origin}</Text>
               </TouchableOpacity>
             </View>
@@ -124,7 +137,7 @@ export default function BabyNames() {
         ListFooterComponent={<Text style={styles.note}>Name meanings and origins are a guide and may vary by source and culture.</Text>}
         renderItem={({ item: n }) => {
           const fav = favorites.has(keyOf(n));
-          const t = TONE[n.gender] ?? TONE.unisex;
+          const t = tone[n.gender] ?? tone.unisex;
           return (
             <View style={styles.card}>
               <View style={[styles.genderDot, { backgroundColor: t.bg }]}>
@@ -136,7 +149,7 @@ export default function BabyNames() {
                 <Text style={styles.origin}>{n.origin}</Text>
               </View>
               <TouchableOpacity onPress={() => toggleFav(n)} style={styles.heartBtn} hitSlop={6}>
-                <Icon name="heart" size={22} color={fav ? colors.accent : '#D8CDD4'} fill={fav} />
+                <Icon name="heart" size={22} color={fav ? colors.accent : colors.inactive} fill={fav} />
               </TouchableOpacity>
             </View>
           );
@@ -146,36 +159,36 @@ export default function BabyNames() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas, paddingTop: 8 },
+const makeStyles = (c: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.canvas, paddingTop: 8 },
   fixed: { paddingHorizontal: 18 },
-  tabs: { flexDirection: 'row', gap: 6, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14, padding: 4 },
+  tabs: { flexDirection: 'row', gap: 6, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 14, padding: 4 },
   tab: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  tabOn: { backgroundColor: colors.accent },
-  tabText: { fontFamily: fonts.body6, fontSize: 12, color: colors.muted },
-  tabTextOn: { color: colors.white },
-  searchWrap: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 13, height: 44, marginTop: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: 14 },
-  search: { flex: 1, fontFamily: fonts.body5, fontSize: 14, color: colors.ink },
+  tabOn: { backgroundColor: c.accentFill },
+  tabText: { fontFamily: fonts.body6, fontSize: 12, color: c.muted },
+  tabTextOn: { color: c.onAccent },
+  searchWrap: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 13, height: 44, marginTop: 10, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder, borderRadius: 14 },
+  search: { flex: 1, fontFamily: fonts.body5, fontSize: 14, color: c.ink },
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 10 },
-  gChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 100, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
-  gChipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  gChipText: { fontFamily: fonts.body6, fontSize: 12, color: '#6E5560' },
-  gChipTextOn: { color: colors.white },
+  gChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 100, backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardBorder },
+  gChipOn: { backgroundColor: c.accentFill, borderColor: c.accentFill },
+  gChipText: { fontFamily: fonts.body6, fontSize: 12, color: c.subtleText },
+  gChipTextOn: { color: c.onAccent },
   originPanel: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 8 },
-  oChip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 100, backgroundColor: colors.chipBg, borderWidth: 1, borderColor: colors.cardBorder },
-  oChipOn: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
-  oChipText: { fontFamily: fonts.body5, fontSize: 12, color: '#6E5560' },
-  oChipTextOn: { color: colors.accentDeep, fontFamily: fonts.body6 },
-  count: { fontFamily: fonts.body5, fontSize: 11, color: colors.muted, marginTop: 12, marginBottom: 10 },
-  card: { ...cardStyle, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, paddingHorizontal: 14, marginBottom: 9 },
+  oChip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 100, backgroundColor: c.chipBg, borderWidth: 1, borderColor: c.cardBorder },
+  oChipOn: { backgroundColor: c.accentSoft, borderColor: c.accent },
+  oChipText: { fontFamily: fonts.body5, fontSize: 12, color: c.subtleText },
+  oChipTextOn: { color: c.accentDeep, fontFamily: fonts.body6 },
+  count: { fontFamily: fonts.body5, fontSize: 11, color: c.muted, marginTop: 12, marginBottom: 10 },
+  card: { ...makeCardStyle(c), flexDirection: 'row', alignItems: 'center', gap: 12, padding: 13, paddingHorizontal: 14, marginBottom: 9 },
   genderDot: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  name: { fontFamily: fonts.displaySemi, fontSize: 17, color: colors.ink },
-  meaning: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 16, color: '#6E5560', marginTop: 2 },
-  origin: { fontFamily: fonts.body6, fontSize: 10, color: colors.muted, marginTop: 4 },
+  name: { fontFamily: fonts.displaySemi, fontSize: 17, color: c.ink },
+  meaning: { fontFamily: fonts.body5, fontSize: 12, lineHeight: 16, color: c.subtleText, marginTop: 2 },
+  origin: { fontFamily: fonts.body6, fontSize: 10, color: c.muted, marginTop: 4 },
   heartBtn: { padding: 5 },
   emptyBox: { alignItems: 'center', marginTop: 44, gap: 14 },
-  emptyIcon: { width: 58, height: 58, borderRadius: 29, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 19, color: colors.muted, textAlign: 'center', paddingHorizontal: 32 },
-  noMatch: { fontFamily: fonts.body5, fontSize: 14, color: colors.muted, textAlign: 'center', marginTop: 24 },
-  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: colors.faint, textAlign: 'center', marginTop: 16, paddingHorizontal: 14 },
+  emptyIcon: { width: 58, height: 58, borderRadius: 29, backgroundColor: c.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  emptyText: { fontFamily: fonts.body5, fontSize: 13, lineHeight: 19, color: c.muted, textAlign: 'center', paddingHorizontal: 32 },
+  noMatch: { fontFamily: fonts.body5, fontSize: 14, color: c.muted, textAlign: 'center', marginTop: 24 },
+  note: { fontFamily: fonts.body5, fontSize: 11, lineHeight: 16, color: c.faint, textAlign: 'center', marginTop: 16, paddingHorizontal: 14 },
 });

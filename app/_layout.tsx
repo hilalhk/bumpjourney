@@ -17,9 +17,10 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ConfirmProvider } from '../components/ConfirmDialog';
-import { colors } from '../lib/theme';
+import { ThemeProvider, useTheme, useThemePrefBootstrap } from '../lib/ThemeContext';
 import { supabase } from '../lib/supabase';
 
 // Keep the native splash up until fonts, session, and the intro flag are all
@@ -73,24 +74,45 @@ export default function RootLayout() {
       // intro can navigate to /login without the stale introSeen flag fighting it.
       router.replace(introSeen ? '/login' : '/intro');
     }
-  }, [session, loading, segments, fontsLoaded, introSeen]);
+  }, [session, loading, segments, fontsLoaded, introSeen, router]);
 
-  const ready = fontsLoaded && !loading && introSeen !== null;
+  // Held alongside fonts/session so the splash covers the first paint — otherwise
+  // a dark-mode user sees one light frame before the stored preference resolves.
+  const themePref = useThemePrefBootstrap();
+
+  const ready = fontsLoaded && !loading && introSeen !== null && themePref !== null;
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded || themePref === null) return null;
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }} edges={['top']}>
-        <StatusBar style="dark" backgroundColor={colors.canvas} />
+      <ThemeProvider initialPref={themePref}>
         <ConfirmProvider>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }} />
+          <AppShell />
         </ConfirmProvider>
-      </SafeAreaView>
+      </ThemeProvider>
     </SafeAreaProvider>
+  );
+}
+
+// Split out so it can read the theme it is being rendered inside of.
+//
+// Edge-to-edge: the root deliberately does NOT inset for the status bar. Each
+// screen spans the full window so its ScreenGlow bleeds up behind the system
+// bars; the top inset is applied by the headers (TopBar / StackHeader /
+// TabHeader) instead. Setting StatusBar backgroundColor here would paint an
+// opaque strip on Android and undo that.
+function AppShell() {
+  const { colors } = useTheme();
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.canvas }}>
+      {/* "auto" resolves to light text on dark and vice versa. */}
+      <StatusBar style="auto" translucent />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }} />
+    </View>
   );
 }
