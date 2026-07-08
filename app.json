@@ -8,6 +8,12 @@
     "scheme": "bumpjourney",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/86c7eaa4-16dc-4114-b739-0548415ef544"
+    },
     "ios": {
       "supportsTablet": true
     },
