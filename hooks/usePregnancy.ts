@@ -1,5 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { progressFor } from '../lib/pregnancy';
 import { supabase } from '../lib/supabase';
 
 export type PregnancyInfo = {
@@ -22,11 +23,7 @@ export function usePregnancy(): PregnancyInfo | null {
           .order('created_at', { ascending: false }).limit(1);
         if (!data || data.length === 0) { setInfo(null); return; }
         const dueDate = new Date(data[0].due_date + 'T00:00:00');
-        const daysToGo = Math.max(0, Math.round((dueDate.getTime() - Date.now()) / 86400000));
-        const daysAlong = 280 - daysToGo;
-        const week = Math.max(0, Math.floor(daysAlong / 7));
-        const day = Math.max(0, daysAlong % 7);
-        const trimester = week <= 13 ? 1 : week <= 27 ? 2 : 3;
+        const { week, day, daysToGo, trimester } = progressFor(dueDate);
         setInfo({ dueDate, week, day, daysToGo, trimester });
       })();
     }, [])

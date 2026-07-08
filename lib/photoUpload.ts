@@ -5,7 +5,8 @@ export async function pickImage(): Promise<ImagePicker.ImagePickerAsset | null> 
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) return null;
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    // MediaTypeOptions is @deprecated in SDK 54 — use a MediaType array.
+    mediaTypes: ['images'],
     quality: 0.7,
     allowsEditing: false,
   });
@@ -54,6 +55,10 @@ export async function signedUrl(path: string): Promise<string | null> {
 }
 
 export async function deletePhoto(id: string, path: string): Promise<void> {
+  // Row first: if the storage delete fails we leak an orphaned object, which is
+  // invisible. Removing the object first and then failing to delete the row
+  // leaves a visible photo entry that can never load.
+  const { error } = await supabase.from('photos').delete().eq('id', id);
+  if (error) return;
   await supabase.storage.from('photos').remove([path]);
-  await supabase.from('photos').delete().eq('id', id);
 }

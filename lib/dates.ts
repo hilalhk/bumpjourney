@@ -15,6 +15,33 @@ export function todayStr() {
   return dayKey(new Date());
 }
 
+/**
+ * Absolute instants bounding a local calendar day, as a half-open range
+ * [dayStartIso(key), dayEndIso(key)).
+ *
+ * `timestamptz` columns must be compared against real instants. Passing a naive
+ * "YYYY-MM-DDT00:00:00" string makes Postgres read it in the server's timezone
+ * (UTC), so a user at UTC+5 gets a "day" that actually runs 05:00–05:00 local.
+ */
+export function dayStartIso(key: string) {
+  return new Date(key + 'T00:00:00').toISOString();
+}
+
+export function dayEndIso(key: string) {
+  const d = new Date(key + 'T00:00:00');
+  d.setDate(d.getDate() + 1);
+  return d.toISOString();
+}
+
+/** Whole calendar days from `from` to `target`, both snapped to local midnight. */
+export function calendarDaysUntil(target: Date, from: Date = new Date()) {
+  const a = new Date(from);
+  a.setHours(0, 0, 0, 0);
+  const b = new Date(target);
+  b.setHours(0, 0, 0, 0);
+  return Math.round((b.getTime() - a.getTime()) / 86_400_000);
+}
+
 /** Human label for a YYYY-MM-DD key, e.g. "Tue, Jun 16, 2026". */
 export function labelOf(key: string) {
   return new Date(key + 'T00:00:00').toLocaleDateString(undefined, {
