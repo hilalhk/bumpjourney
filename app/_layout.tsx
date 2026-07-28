@@ -110,8 +110,9 @@ function AppShell() {
   const { colors } = useTheme();
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
-      {/* "auto" resolves to light text on dark and vice versa. */}
-      <StatusBar style="auto" translucent />
+      {/* "auto" resolves to light text on dark and vice versa. Under mandatory
+          edge-to-edge (SDK 55+) the bar is always translucent, so no prop. */}
+      <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }} />
     </View>
   );

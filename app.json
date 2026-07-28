@@ -2,12 +2,11 @@
   "expo": {
     "name": "BumpJourney",
     "slug": "BumpJourney",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
     "scheme": "bumpjourney",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -23,7 +22,6 @@
         "backgroundColor": "#CE4F7A",
         "foregroundImage": "./assets/images/app-icon.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {

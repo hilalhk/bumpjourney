@@ -68,10 +68,10 @@ export function ThemeProvider({ initialPref, children }: { initialPref: ThemePre
 
   // Appearance.setColorScheme is an app-level override: it makes useColorScheme()
   // — and native elements like pickers and alerts — report the forced scheme, so
-  // nothing else has to know about `pref`. Passing null clears the override (RN
-  // maps it to the native 'unspecified').
+  // nothing else has to know about `pref`. Passing 'unspecified' clears the
+  // override (RN 0.86 dropped the old `null` form in favor of 'unspecified').
   useEffect(() => {
-    Appearance.setColorScheme(pref === 'system' ? null : pref);
+    Appearance.setColorScheme(pref === 'system' ? 'unspecified' : pref);
   }, [pref]);
 
   // Reading the hook (rather than pref) means an OS-level change while on
