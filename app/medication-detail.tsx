@@ -1,6 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -27,6 +28,7 @@ function dateKey(d: Date) {
 export default function MedicationDetail() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
   const [med, setMed] = useState<Med | null>(null);
@@ -124,7 +126,7 @@ export default function MedicationDetail() {
         onRightPress={() => router.push({ pathname: '/medication-edit', params: { id: med.id } })}
       />
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 + insets.bottom }}>
         <View style={styles.infoCard}>
           {med.dosage ? <View style={styles.infoRow}><Text style={styles.infoLabel}>Dose</Text><Text style={styles.infoValue}>{med.dosage}</Text></View> : null}
           <View style={styles.infoRow}>
@@ -194,8 +196,8 @@ export default function MedicationDetail() {
         )}
 
         <Text style={styles.note}>
-          Mark doses as taken from the home screen. This log is for tracking only — always follow the dose and schedule
-          your healthcare provider gives you.
+          Tap the circle next to a medication in your list to mark it taken. This log is for tracking only — always
+          follow the dose and schedule your healthcare provider gives you.
         </Text>
       </ScrollView>
     </View>

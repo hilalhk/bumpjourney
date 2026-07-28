@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -29,6 +30,7 @@ const toneFor = (c: Colors): Record<string, { bg: string; color: string }> =>
 export default function BabyNames() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const tone = toneFor(colors);
   const [tab, setTab] = useState<Tab>('browse');
   const [query, setQuery] = useState('');
@@ -120,7 +122,7 @@ export default function BabyNames() {
       <FlatList
         data={list}
         keyExtractor={keyOf}
-        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 40 + insets.bottom }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={tab === 'browse' ? <Text style={styles.count}>{list.length} name{list.length !== 1 ? 's' : ''}</Text> : <View style={{ height: 16 }} />}

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
@@ -24,6 +25,7 @@ const COUNT_CHIP: Record<number, string> = { 1: 'Just one', 2: 'Twins', 3: 'Trip
 export default function EditBabies() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [count, setCount] = useState(1);
   const [babies, setBabies] = useState<Baby[]>([{ sex: null, name: '' }]);
@@ -96,7 +98,7 @@ export default function EditBabies() {
       <ScreenGlow />
       <TopBar title="Your babies" />
 
-      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + kbHeight }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + insets.bottom + kbHeight }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text style={styles.intro}>Expecting more than one? Set how many babies you{"'"}re expecting, then add each one{"'"}s gender and name. You can change this anytime.</Text>
 
         {loading ? (

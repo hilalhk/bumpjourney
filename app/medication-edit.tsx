@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { dayKey, displayTime } from '../lib/dates';
 import { showAlert, useConfirm } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
@@ -29,6 +30,7 @@ function parseTime(t: string) {
 export default function MedicationEdit() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const confirm = useConfirm();
   const params = useLocalSearchParams<{ id?: string }>();
@@ -127,7 +129,7 @@ export default function MedicationEdit() {
         right={<TouchableOpacity onPress={save} disabled={saving} hitSlop={8}><Text style={styles.saveTop}>{saving ? '…' : 'Save'}</Text></TouchableOpacity>}
       />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 + insets.bottom }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text style={styles.label}>Name</Text>
         <TextInput
           style={styles.input}

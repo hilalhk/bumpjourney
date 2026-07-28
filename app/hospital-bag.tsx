@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { Icon } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -22,6 +23,7 @@ const DEFAULT_SECTIONS: Section[] = [
 export default function HospitalBag() {
   const { colors, gradient, shadow } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [sections, setSections] = useState<Section[]>(DEFAULT_SECTIONS);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState<string | null>(null);
@@ -79,7 +81,7 @@ export default function HospitalBag() {
       <ScreenGlow />
       <TopBar title="Hospital bag" />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + insets.bottom }} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.progressCard, shadow.accent]}>
           <View style={styles.progressTop}>
             <Text style={styles.progressText}>{done} of {total} packed</Text>

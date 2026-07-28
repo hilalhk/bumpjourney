@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { showAlert, useConfirm } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
@@ -37,6 +38,7 @@ export default function Settings() {
   const router = useRouter();
   const { colors, gradient, pref, setPref } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const info = usePregnancy();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -118,7 +120,7 @@ export default function Settings() {
       <ScreenGlow />
       <TopBar title="Settings" />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + insets.bottom }} showsVerticalScrollIndicator={false}>
         {/* profile header */}
         <View style={styles.profile}>
           <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>

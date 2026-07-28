@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
@@ -36,6 +37,7 @@ function WaterRing({ glasses, goal }: { glasses: number; goal: number }) {
 export default function WaterTracker() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [glasses, setGlasses] = useState(0);
   const [goal] = useState(8);
 
@@ -60,7 +62,7 @@ export default function WaterTracker() {
     <View style={styles.container}>
       <ScreenGlow />
       <TopBar title="Water Tracker" />
-      <ScrollView contentContainerStyle={{ padding: 20, alignItems: 'center', paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, alignItems: 'center', paddingBottom: 40 + insets.bottom }} showsVerticalScrollIndicator={false}>
         <View style={{ marginTop: 6 }}>
           <WaterRing glasses={glasses} goal={goal} />
         </View>

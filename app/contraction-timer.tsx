@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
@@ -33,6 +34,7 @@ function avgDuration(list: RawContraction[]) {
 export default function ContractionTimer() {
   const { colors, gradient } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [sessionStart, setSessionStart] = useState<Date | null>(null);
   const [contractions, setContractions] = useState<Contraction[]>([]);
@@ -136,7 +138,7 @@ export default function ContractionTimer() {
       <FlatList
         data={shown}
         keyExtractor={(day) => day.key}
-        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 40 + insets.bottom }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { showAlert } from '../components/ConfirmDialog';
 import DateTimeModal from '../components/DateTimeModal';
 import GradientButton from '../components/GradientButton';
@@ -33,6 +34,7 @@ function weekFromDue(due: Date) {
 export default function EditDueDate() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [pregnancyId, setPregnancyId] = useState<string | null>(null);
   const [currentDue, setCurrentDue] = useState<Date | null>(null);
@@ -81,7 +83,7 @@ export default function EditDueDate() {
       <ScreenGlow />
       <TopBar title="Edit due date" />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + insets.bottom }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text style={styles.intro}>A dating scan or doctor{"'"}s confirmation can change your due date. Update it here and your week-by-week journey will adjust.</Text>
 
         <Text style={styles.label}>How would you like to set it?</Text>

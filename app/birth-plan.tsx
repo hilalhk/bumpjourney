@@ -2,6 +2,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
 import { Icon } from '../components/Icons';
@@ -31,6 +32,7 @@ const QUESTIONS: Question[] = [
 export default function BirthPlan() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
@@ -125,7 +127,7 @@ export default function BirthPlan() {
         ) : <View style={{ width: 40 }} />}
       />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + insets.bottom }} showsVerticalScrollIndicator={false}>
         <View style={styles.intro}>
           <View style={{ marginTop: 1 }}><Icon name="info" size={17} color={colors.accentDeep} /></View>
           <Text style={styles.introText}>

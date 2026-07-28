@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import GradientButton from '../components/GradientButton';
@@ -46,6 +47,7 @@ function Row({ icon, label, value, onPress, actionIcon, last }: RowProps) {
 export default function EmergencyInfo() {
   const { colors, gradient, shadow } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [info, setInfo] = useState<Info>(EMPTY);
   const [editing, setEditing] = useState(false);
@@ -118,7 +120,7 @@ export default function EmergencyInfo() {
           onBack={() => (hasData ? setEditing(false) : router.back())}
           right={<TouchableOpacity onPress={save} disabled={saving} hitSlop={8}><Text style={styles.saveTop}>{saving ? '…' : 'Save'}</Text></TouchableOpacity>}
         />
-        <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 120 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 120 + insets.bottom }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <Text style={styles.sectionHead}>Doctor / midwife</Text>
           {field('Name', 'doctor_name', 'Dr. …')}
           {field('Phone', 'doctor_phone', 'Phone number', 'phone-pad')}
@@ -168,7 +170,7 @@ export default function EmergencyInfo() {
         title="Emergency info"
         right={<TouchableOpacity style={styles.circle} onPress={() => setEditing(true)} activeOpacity={0.85}><Icon name="pencil" size={17} color={colors.accent} /></TouchableOpacity>}
       />
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + insets.bottom }} showsVerticalScrollIndicator={false}>
         {/* emergency-services call banner */}
         <TouchableOpacity activeOpacity={0.9} onPress={() => Linking.openURL('tel:911')} style={shadow.accent}>
           <LinearGradient colors={gradient.accent} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>

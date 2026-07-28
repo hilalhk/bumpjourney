@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { Icon, IconName } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -45,6 +46,7 @@ function Card({ icon, title, when, note, onPress }: CardProps) {
 export default function Notifications() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [appts, setAppts] = useState<Appt[]>([]);
   const [meds, setMeds] = useState<Med[]>([]);
@@ -77,7 +79,7 @@ export default function Notifications() {
       <ScreenGlow />
       <TopBar title="Notifications" />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: 40 + insets.bottom }} showsVerticalScrollIndicator={false}>
         {loading && <Text style={styles.empty}>Loading…</Text>}
         {isEmpty && (
           <View style={styles.emptyBox}>

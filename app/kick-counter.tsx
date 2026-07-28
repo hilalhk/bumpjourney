@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { showAlert } from '../components/ConfirmDialog';
 import { Icon } from '../components/Icons';
@@ -23,6 +24,7 @@ const HELP_TEXT =
 export default function KickCounter() {
   const { colors, gradient } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [kicks, setKicks] = useState(0);
   const [elapsed, setElapsed] = useState(0);
@@ -109,7 +111,7 @@ export default function KickCounter() {
       <FlatList
         data={shown}
         keyExtractor={(day) => day.key}
-        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 40 + insets.bottom }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { makeCardStyle } from '../components/Card';
 import { Icon, IconName } from '../components/Icons';
 import ScreenGlow from '../components/ScreenGlow';
@@ -28,6 +29,7 @@ const verdictFor = (c: Colors): Record<Verdict, VerdictMeta> =>
 export default function FoodSafety() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const verdict = verdictFor(colors);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string | null>(null);
@@ -88,7 +90,7 @@ export default function FoodSafety() {
 
       {/* flex:1 gives the list a definite basis so it absorbs the remaining height
           instead of overflowing the column and forcing siblings to shrink. */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingTop: 12, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingTop: 12, paddingBottom: 40 + insets.bottom }} showsVerticalScrollIndicator={false}>
         {results.length === 0 && (
           <View style={styles.emptyWrap}>
             <View style={styles.emptyIcon}><Icon name="search" size={28} color={colors.accent} /></View>
