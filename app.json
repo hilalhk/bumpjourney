@@ -43,6 +43,13 @@
         }
       ],
       "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
       "expo-font",
       "@react-native-google-signin/google-signin"
     ],
